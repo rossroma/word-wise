@@ -669,39 +669,73 @@ function injectTranslations(translations) {
     // 创建新的HTML内容
     let newHTML = text;
     
-    // 为每个疑难词汇添加翻译
+    // 收集所有需要替换的位置（避免重复替换）
+    const replacements = [];
+    
+    // 为每个疑难词汇查找匹配位置
     Object.keys(translations).forEach(word => {
       const translation = translations[word];
       // 使用正则匹配整个单词（不区分大小写）
       const regex = new RegExp(`\\b(${word})\\b`, 'gi');
       
-      // 先测试是否匹配
-      const hasMatch = regex.test(newHTML);
-      
-      if (hasMatch) {
-        // 重新创建正则（因为test()会改变lastIndex）
-        const replaceRegex = new RegExp(`\\b(${word})\\b`, 'gi');
-        const beforeReplace = newHTML;
+      let match;
+      while ((match = regex.exec(text)) !== null) {
+        // 检查这个位置是否已经被其他单词占用
+        const start = match.index;
+        const end = start + match[0].length;
+        const isOverlapping = replacements.some(r => 
+          (start >= r.start && start < r.end) || 
+          (end > r.start && end <= r.end)
+        );
         
-        newHTML = newHTML.replace(replaceRegex, (match) => {
-          hasTranslation = true;
-          matchCount++;
+        if (!isOverlapping) {
+          replacements.push({
+            start,
+            end,
+            original: match[0],
+            word,
+            translation
+          });
           
           if (word.toLowerCase() === 'exceptions') {
-            console.log(`🔍 [调试-${nodeIndex}] 正在替换 "exceptions":`);
-            console.log(`  匹配到: "${match}"`);
+            console.log(`🔍 [调试-${nodeIndex}] 发现 "exceptions" 匹配:`);
+            console.log(`  位置: ${start}-${end}`);
+            console.log(`  匹配到: "${match[0]}"`);
             console.log(`  翻译为: "${translation}"`);
-            console.log(`  替换前片段: "${beforeReplace.substring(Math.max(0, beforeReplace.indexOf(match) - 20), beforeReplace.indexOf(match) + match.length + 20)}"`);
           }
-          
-          return `<span class="zhiyi-word">${match}<span class="zhiyi-translation">（${translation}）</span></span>`;
-        });
-        
-        if (word.toLowerCase() === 'exceptions') {
-          console.log(`🔍 [调试-${nodeIndex}] 替换后片段: "${newHTML.substring(0, 300)}..."`);
         }
       }
     });
+    
+    // 如果有替换，按位置从后往前替换（避免位置偏移）
+    if (replacements.length > 0) {
+      hasTranslation = true;
+      matchCount += replacements.length;
+      
+      // 按起始位置排序，从后往前替换
+      replacements.sort((a, b) => b.start - a.start);
+      
+      if (containsExceptions) {
+        console.log(`🔍 [调试-${nodeIndex}] 共找到 ${replacements.length} 个匹配，准备替换`);
+      }
+      
+      replacements.forEach(r => {
+        const before = newHTML.substring(0, r.start);
+        const after = newHTML.substring(r.end);
+        const replacement = `<span class="zhiyi-word">${r.original}<span class="zhiyi-translation">（${r.translation}）</span></span>`;
+        newHTML = before + replacement + after;
+        
+        if (r.word.toLowerCase() === 'exceptions') {
+          console.log(`🔍 [调试-${nodeIndex}] 替换 "exceptions":`);
+          console.log(`  原文: "${r.original}"`);
+          console.log(`  替换为: "${replacement}"`);
+        }
+      });
+      
+      if (containsExceptions) {
+        console.log(`🔍 [调试-${nodeIndex}] 最终HTML: "${newHTML.substring(0, 300)}..."`);
+      }
+    }
     
     // 如果有翻译，则替换节点
     if (hasTranslation) {
