@@ -131,6 +131,75 @@ window.zhiyiPerf = {
   enable: () => perfLogger.enabled = true,
   disable: () => perfLogger.enabled = false
 };
+
+// 在控制台暴露调试功能
+window.zhiyiDebug = {
+  // 检查页面中包含某个词的所有元素
+  findWord: (word) => {
+    const results = [];
+    const walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+      null
+    );
+    
+    let node;
+    while (node = walker.nextNode()) {
+      if (new RegExp(word, 'i').test(node.textContent)) {
+        results.push({
+          text: node.textContent.substring(0, 100),
+          parent: node.parentElement,
+          parentTag: node.parentElement?.tagName,
+          parentClass: node.parentElement?.className,
+          html: node.parentElement?.innerHTML.substring(0, 200)
+        });
+      }
+    }
+    
+    console.log(`找到 ${results.length} 个包含 "${word}" 的节点:`);
+    console.table(results);
+    return results;
+  },
+  
+  // 统计翻译相关的元素
+  countElements: () => {
+    const stats = {
+      'zhiyi-translated': document.querySelectorAll('.zhiyi-translated').length,
+      'zhiyi-word': document.querySelectorAll('.zhiyi-word').length,
+      'zhiyi-translation': document.querySelectorAll('.zhiyi-translation').length
+    };
+    console.log('翻译元素统计:', stats);
+    return stats;
+  },
+  
+  // 检查是否有重复翻译
+  checkDuplicates: () => {
+    const elements = document.querySelectorAll('.zhiyi-translation');
+    const duplicates = [];
+    
+    elements.forEach(el => {
+      const text = el.textContent;
+      // 检查是否出现多次相同的翻译括号
+      const matches = text.match(/（[^）]+）/g);
+      if (matches && matches.length > 1) {
+        duplicates.push({
+          element: el,
+          text: el.parentElement?.textContent.substring(0, 100),
+          translations: matches
+        });
+      }
+    });
+    
+    console.log(`发现 ${duplicates.length} 个可能的重复翻译:`);
+    console.table(duplicates);
+    return duplicates;
+  }
+};
+
+console.log('🔍 调试工具已加载，使用 window.zhiyiDebug 访问:');
+console.log('  - zhiyiDebug.findWord("exceptions") - 查找包含某词的所有节点');
+console.log('  - zhiyiDebug.countElements() - 统计翻译元素数量');
+console.log('  - zhiyiDebug.checkDuplicates() - 检查重复翻译');
 // ========================================
 
 // 安全地发送消息，带重试机制
@@ -292,6 +361,9 @@ function showActivationPrompt() {
 
 // 开始翻译流程
 async function startTranslation() {
+  console.log('🔍 [调试] ========== startTranslation 被调用 ==========');
+  console.log('🔍 [调试] 调用栈:', new Error().stack);
+  
   perfLogger.start('翻译流程', '翻译处理');
   
   try {
@@ -541,6 +613,7 @@ function getTextNodes(element) {
 
 // 注入翻译结果到DOM
 function injectTranslations(translations) {
+  console.log('🔍 [调试] 开始注入翻译，翻译词汇:', Object.keys(translations));
   perfLogger.start('DOM遍历', 'DOM操作');
   
   const walker = document.createTreeWalker(
@@ -558,6 +631,7 @@ function injectTranslations(translations) {
         
         // 跳过已经处理过的节点
         if (parent.classList.contains('zhiyi-translated')) {
+          console.log('🔍 [调试] 跳过已翻译节点:', parent.className);
           return NodeFilter.FILTER_REJECT;
         }
         
@@ -579,8 +653,17 @@ function injectTranslations(translations) {
   let replacedCount = 0;
   let matchCount = 0;
   
-  nodesToProcess.forEach(textNode => {
+  nodesToProcess.forEach((textNode, nodeIndex) => {
     let text = textNode.textContent;
+    
+    // 特别关注包含 "exceptions" 的节点
+    const containsExceptions = /exceptions/i.test(text);
+    if (containsExceptions) {
+      console.log(`🔍 [调试-${nodeIndex}] 发现包含 "exceptions" 的节点:`);
+      console.log(`  原始文本: "${text.substring(0, 200)}..."`);
+      console.log(`  父元素: ${textNode.parentElement?.tagName}.${textNode.parentElement?.className}`);
+    }
+    
     let hasTranslation = false;
     
     // 创建新的HTML内容
@@ -592,12 +675,31 @@ function injectTranslations(translations) {
       // 使用正则匹配整个单词（不区分大小写）
       const regex = new RegExp(`\\b(${word})\\b`, 'gi');
       
-      if (regex.test(newHTML)) {
-        newHTML = newHTML.replace(regex, (match) => {
+      // 先测试是否匹配
+      const hasMatch = regex.test(newHTML);
+      
+      if (hasMatch) {
+        // 重新创建正则（因为test()会改变lastIndex）
+        const replaceRegex = new RegExp(`\\b(${word})\\b`, 'gi');
+        const beforeReplace = newHTML;
+        
+        newHTML = newHTML.replace(replaceRegex, (match) => {
           hasTranslation = true;
           matchCount++;
+          
+          if (word.toLowerCase() === 'exceptions') {
+            console.log(`🔍 [调试-${nodeIndex}] 正在替换 "exceptions":`);
+            console.log(`  匹配到: "${match}"`);
+            console.log(`  翻译为: "${translation}"`);
+            console.log(`  替换前片段: "${beforeReplace.substring(Math.max(0, beforeReplace.indexOf(match) - 20), beforeReplace.indexOf(match) + match.length + 20)}"`);
+          }
+          
           return `<span class="zhiyi-word">${match}<span class="zhiyi-translation">（${translation}）</span></span>`;
         });
+        
+        if (word.toLowerCase() === 'exceptions') {
+          console.log(`🔍 [调试-${nodeIndex}] 替换后片段: "${newHTML.substring(0, 300)}..."`);
+        }
       }
     });
     
@@ -608,8 +710,18 @@ function injectTranslations(translations) {
       wrapper.className = 'zhiyi-translated';
       wrapper.innerHTML = newHTML;
       
+      if (containsExceptions) {
+        console.log(`🔍 [调试-${nodeIndex}] 即将替换包含 "exceptions" 的节点`);
+        console.log(`  最终HTML: "${wrapper.innerHTML.substring(0, 300)}..."`);
+      }
+      
       parent.replaceChild(wrapper, textNode);
       replacedCount++;
+      
+      if (containsExceptions) {
+        console.log(`🔍 [调试-${nodeIndex}] 已完成替换，父元素现在的className: "${parent.className}"`);
+        console.log(`🔍 [调试-${nodeIndex}] 替换后的wrapper内容: "${wrapper.innerHTML.substring(0, 300)}..."`);
+      }
     }
   });
   
@@ -619,7 +731,9 @@ function injectTranslations(translations) {
     匹配次数: matchCount
   });
   
-  console.log('翻译注入完成');
+  console.log('🔍 [调试] 翻译注入完成，共处理', nodesToProcess.length, '个节点，替换', replacedCount, '个节点');
+  console.log('🔍 [调试] 最终页面中包含 zhiyi-translated 的元素数量:', document.querySelectorAll('.zhiyi-translated').length);
+  console.log('🔍 [调试] 最终页面中包含 zhiyi-word 的元素数量:', document.querySelectorAll('.zhiyi-word').length);
 }
 
 
@@ -637,14 +751,21 @@ function showError(message) {
 
 // 监听来自popup的消息
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log('🔍 [调试] 收到消息:', request);
+  
   if (request.action === 'toggleTranslation') {
+    console.log('🔍 [调试] toggleTranslation 消息，enabled:', request.enabled);
     isActivated = request.enabled;
     
     if (isActivated) {
+      console.log('🔍 [调试] 准备启动翻译...');
       startTranslation();
     } else {
+      console.log('🔍 [调试] 移除所有翻译...');
       // 移除所有翻译
-      document.querySelectorAll('.zhiyi-translated, .zhiyi-word').forEach(el => {
+      const elementsToRemove = document.querySelectorAll('.zhiyi-translated, .zhiyi-word');
+      console.log('🔍 [调试] 找到', elementsToRemove.length, '个需要移除的元素');
+      elementsToRemove.forEach(el => {
         el.replaceWith(el.textContent);
       });
     }
