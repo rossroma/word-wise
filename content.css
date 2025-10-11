@@ -1,0 +1,236 @@
+/* Content Script样式 - 注入到网页中 */
+
+/* 激活提示框 */
+.zhiyi-activation-prompt {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 999999;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  max-width: 320px;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.zhiyi-prompt-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.zhiyi-prompt-text {
+  font-size: 15px;
+  color: #333;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.zhiyi-prompt-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.zhiyi-btn {
+  flex: 1;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.zhiyi-btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.zhiyi-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.zhiyi-btn-secondary {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.zhiyi-btn-secondary:hover {
+  background: #e0e0e0;
+}
+
+/* 翻译词汇样式 */
+.zhiyi-translated {
+  display: inline;
+}
+
+.zhiyi-word {
+  display: inline;
+  position: relative;
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted #667eea;
+  cursor: help;
+  transition: all 0.2s;
+}
+
+.zhiyi-word:hover {
+  background: rgba(102, 126, 234, 0.08);
+  border-bottom-style: solid;
+}
+
+.zhiyi-translation {
+  display: inline;
+  color: #667eea;
+  font-size: 0.9em;
+  font-weight: normal;
+  margin-left: 2px;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+/* 深色背景页面的适配 */
+html[data-theme="dark"] .zhiyi-translation,
+body[data-theme="dark"] .zhiyi-translation,
+.dark .zhiyi-translation {
+  color: #8b9eff;
+}
+
+html[data-theme="dark"] .zhiyi-word,
+body[data-theme="dark"] .zhiyi-word,
+.dark .zhiyi-word {
+  border-bottom-color: #8b9eff;
+}
+
+/* 错误提示 */
+.zhiyi-error-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999999;
+  background: #f44336;
+  color: white;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  font-size: 14px;
+  max-width: 300px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 加载提示 */
+.zhiyi-loading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 999999;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 20px 30px;
+  border-radius: 12px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.zhiyi-loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Tooltip高级功能（可选） */
+.zhiyi-tooltip {
+  position: absolute;
+  z-index: 999999;
+  background: #333;
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 250px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.zhiyi-tooltip.show {
+  opacity: 1;
+}
+
+.zhiyi-tooltip-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 6px 6px 6px;
+  border-color: transparent transparent #333 transparent;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .zhiyi-activation-prompt {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+  
+  .zhiyi-translation {
+    font-size: 0.85em;
+  }
+}
+
+/* 打印时隐藏翻译 */
+@media print {
+  .zhiyi-translation {
+    display: none;
+  }
+  
+  .zhiyi-word {
+    border: none;
+  }
+}
+

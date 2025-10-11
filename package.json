@@ -1,0 +1,44 @@
+{
+  "name": "zhiyi-smart-translation",
+  "version": "1.0.0",
+  "description": "智能识别并翻译网页中的疑难词汇，提升英文阅读效率",
+  "main": "background.js",
+  "scripts": {
+    "build": "echo 'No build required for Manifest V3 extension'",
+    "lint": "eslint *.js",
+    "format": "prettier --write '**/*.{js,json,html,css,md}'",
+    "test": "echo 'No tests configured yet'",
+    "package": "zip -r zhiyi-extension.zip . -x '*.git*' -x 'node_modules/*' -x '*.zip' -x 'package-lock.json'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/wdc-extension.git"
+  },
+  "keywords": [
+    "chrome-extension",
+    "translation",
+    "english-learning",
+    "ai-translation",
+    "reading-assistant",
+    "language-learning",
+    "chatgpt",
+    "openai"
+  ],
+  "author": "Your Name <your-email@example.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/your-username/wdc-extension/issues"
+  },
+  "homepage": "https://github.com/your-username/wdc-extension#readme",
+  "devDependencies": {
+    "eslint": "^8.50.0",
+    "prettier": "^3.0.3"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browser": {
+    "chrome": ">=88"
+  }
+}
+

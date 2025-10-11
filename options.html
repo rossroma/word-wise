@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智译 - 设置</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="options-container">
+    <header class="header">
+      <h1>智译设置</h1>
+      <p class="subtitle">配置您的翻译偏好</p>
+    </header>
+    
+    <main class="main-content">
+      <section class="section">
+        <h2 class="section-title">
+          <span class="section-icon">🔑</span>
+          API配置
+        </h2>
+        
+        <div class="form-group">
+          <label for="apiKey" class="required">API Key</label>
+          <input 
+            type="password" 
+            id="apiKey" 
+            class="input-field" 
+            placeholder="请输入您的API密钥"
+          >
+          <p class="help-text">
+            您的API Key仅存储在本地，不会上传到任何服务器。
+            <a href="https://platform.openai.com/api-keys" target="_blank">如何获取API Key?</a>
+          </p>
+        </div>
+        
+        <div class="form-group">
+          <label for="modelName">模型名称（可选）</label>
+          <input 
+            type="text" 
+            id="modelName" 
+            class="input-field" 
+            placeholder="例如: gpt-3.5-turbo, gpt-4-turbo"
+          >
+          <p class="help-text">留空则使用默认模型 gpt-3.5-turbo</p>
+        </div>
+        
+        <div class="form-group">
+          <label for="baseUrl">API基地址（可选）</label>
+          <input 
+            type="text" 
+            id="baseUrl" 
+            class="input-field" 
+            placeholder="例如: https://api.openai.com/v1"
+          >
+          <p class="help-text">用于配置代理或第三方服务</p>
+        </div>
+      </section>
+      
+      <section class="section">
+        <h2 class="section-title">
+          <span class="section-icon">🎯</span>
+          翻译设置
+        </h2>
+        
+        <div class="form-group">
+          <label for="targetLanguage">目标翻译语言</label>
+          <select id="targetLanguage" class="select-field">
+            <option value="zh-CN">简体中文</option>
+            <option value="zh-TW">繁體中文</option>
+            <option value="ja">日本語</option>
+            <option value="ko">한국어</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="difficultyLevel">
+            疑难词汇难度等级
+            <span class="level-value" id="levelDisplay">5</span>
+          </label>
+          <div class="slider-container">
+            <input 
+              type="range" 
+              id="difficultyLevel" 
+              class="range-slider" 
+              min="1" 
+              max="9" 
+              value="5"
+            >
+            <div class="slider-labels">
+              <span>1<br><small>保守</small></span>
+              <span>5<br><small>平衡</small></span>
+              <span>9<br><small>激进</small></span>
+            </div>
+          </div>
+          <p class="help-text">
+            1级最保守（仅翻译最难的词），9级最激进（翻译更多词汇）
+          </p>
+        </div>
+      </section>
+      
+      <section class="section">
+        <h2 class="section-title">
+          <span class="section-icon">📋</span>
+          网站管理
+        </h2>
+        
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="whitelist">白名单</button>
+          <button class="tab-btn" data-tab="blacklist">黑名单</button>
+        </div>
+        
+        <div class="tab-content active" id="whitelist-content">
+          <p class="help-text">在这些网站上自动开启翻译</p>
+          <div class="list-input-group">
+            <input 
+              type="text" 
+              id="whitelistInput" 
+              class="input-field" 
+              placeholder="输入网站域名，例如: wikipedia.org"
+            >
+            <button id="addWhitelist" class="btn-add">添加</button>
+          </div>
+          <ul class="domain-list" id="whitelistDomains"></ul>
+        </div>
+        
+        <div class="tab-content" id="blacklist-content">
+          <p class="help-text">在这些网站上永不开启翻译</p>
+          <div class="list-input-group">
+            <input 
+              type="text" 
+              id="blacklistInput" 
+              class="input-field" 
+              placeholder="输入网站域名，例如: example.com"
+            >
+            <button id="addBlacklist" class="btn-add">添加</button>
+          </div>
+          <ul class="domain-list" id="blacklistDomains"></ul>
+        </div>
+      </section>
+      
+      <div class="action-buttons">
+        <button id="saveBtn" class="btn-primary">保存设置</button>
+        <button id="resetBtn" class="btn-secondary">恢复默认</button>
+      </div>
+      
+      <div id="saveMessage" class="save-message"></div>
+    </main>
+    
+    <footer class="footer">
+      <p>智译 v1.0.0 | 让英文阅读更轻松</p>
+    </footer>
+  </div>
+  
+  <script src="options.js"></script>
+</body>
+</html>
+

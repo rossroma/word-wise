@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智译 - Smart Translation</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <div class="header">
+      <h1>智译</h1>
+      <p class="subtitle">Smart Translation</p>
+    </div>
+    
+    <div class="main-content">
+      <div class="status-section">
+        <div class="status-info">
+          <span class="status-label">当前页面翻译:</span>
+          <span class="status-indicator" id="statusIndicator">未激活</span>
+        </div>
+        
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggleTranslation">
+          <span class="slider"></span>
+        </label>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <div class="info-section">
+        <div class="info-item">
+          <span class="info-icon">📚</span>
+          <span class="info-text" id="wordCount">已翻译: 0 个词汇</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-icon">⚙️</span>
+          <span class="info-text">难度等级: <span id="difficultyLevel">5</span></span>
+        </div>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <div class="actions">
+        <button class="action-btn" id="settingsBtn">
+          <span class="btn-icon">⚙️</span>
+          <span>设置</span>
+        </button>
+        
+        <button class="action-btn" id="feedbackBtn">
+          <span class="btn-icon">💬</span>
+          <span>反馈</span>
+        </button>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <p>智能识别疑难词汇，提升阅读效率</p>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
+
