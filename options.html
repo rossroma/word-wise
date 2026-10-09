@@ -16,12 +16,25 @@
     <main class="main-content">
       <section class="section">
         <h2 class="section-title">
-          <span class="section-icon">🔑</span>
-          API配置
+          <span class="section-icon">🔌</span>
+          翻译服务
         </h2>
+
+        <div class="form-group">
+          <label for="provider">翻译引擎</label>
+          <select id="provider" class="select-field">
+            <option value="auto">自动（质量优先：LLM &gt; DeepL &gt; Chrome）</option>
+            <option value="chrome">Chrome 内置离线翻译（免费）</option>
+            <option value="deepl">DeepL（免费额度）</option>
+            <option value="openai">LLM（OpenAI 兼容）</option>
+          </select>
+          <p class="help-text" id="providerHelp">自动模式优先使用浏览器内置离线翻译，免费且数据不出本机。</p>
+        </div>
+
+        <div id="group-openai" hidden>
         
         <div class="form-group">
-          <label for="apiKey" class="required">API Key</label>
+          <label for="apiKey">API Key</label>
           <input 
             type="password" 
             id="apiKey" 
@@ -55,6 +68,30 @@
           >
           <p class="help-text">用于配置代理或第三方服务</p>
         </div>
+        </div>
+
+        <div id="group-deepl" hidden>
+          <div class="form-group">
+            <label for="deeplApiKey">DeepL API Key</label>
+            <input
+              type="password"
+              id="deeplApiKey"
+              class="input-field"
+              placeholder="形如 xxxx:fx（Free 版）"
+            >
+            <p class="help-text">
+              Free 版每月 50 万字符免费。
+              <a href="https://www.deepl.com/pro-api" target="_blank">获取 Key?</a>
+            </p>
+          </div>
+        </div>
+
+        <div id="group-chrome" hidden>
+          <p class="help-text">
+            使用 Chrome 内置离线翻译：完全免费、无需密钥、数据不出本机。
+            需要 Chrome 138+，首次使用会下载语言包。
+          </p>
+        </div>
       </section>
       
       <section class="section">
@@ -62,6 +99,16 @@
           <span class="section-icon">🎯</span>
           翻译设置
         </h2>
+
+        <div class="form-group">
+          <label class="switch-label" for="autoTranslate">
+            <input type="checkbox" id="autoTranslate">
+            <span>检测到英文网页时自动翻译</span>
+          </label>
+          <p class="help-text">
+            开启：打开英文网页即自动翻译。关闭：不自动翻译，改为在页面右侧显示一个小图标，点击后再翻译。
+          </p>
+        </div>
         
         <div class="form-group">
           <label for="targetLanguage">目标翻译语言</label>
@@ -75,26 +122,27 @@
         
         <div class="form-group">
           <label for="difficultyLevel">
-            疑难词汇难度等级
-            <span class="level-value" id="levelDisplay">5</span>
+            你的英语水平
+            <span class="level-value" id="levelDisplay">B2</span>
           </label>
           <div class="slider-container">
             <input 
               type="range" 
               id="difficultyLevel" 
               class="range-slider" 
-              min="1" 
-              max="9" 
-              value="5"
+              min="2" 
+              max="6" 
+              value="4"
+              step="1"
             >
             <div class="slider-labels">
-              <span>1<br><small>保守</small></span>
-              <span>5<br><small>平衡</small></span>
-              <span>9<br><small>激进</small></span>
+              <span>A2<br><small>初级</small></span>
+              <span>B2<br><small>中高级</small></span>
+              <span>C2<br><small>精通</small></span>
             </div>
           </div>
           <p class="help-text">
-            1级最保守（仅翻译最难的词），9级最激进（翻译更多词汇）
+            根据你的英语水平，智能翻译对应难度的词汇。A2翻译最多，C2仅翻译专业术语
           </p>
         </div>
       </section>
@@ -142,6 +190,7 @@
       <div class="action-buttons">
         <button id="saveBtn" class="btn-primary">保存设置</button>
         <button id="resetBtn" class="btn-secondary">恢复默认</button>
+        <button id="clearCacheBtn" class="btn-secondary">清除翻译缓存</button>
       </div>
       
       <div id="saveMessage" class="save-message"></div>
@@ -155,4 +204,3 @@
   <script src="options.js"></script>
 </body>
 </html>
-

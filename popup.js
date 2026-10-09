@@ -10,10 +10,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 获取当前标签页
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   
+  // CEFR等级映射
+  const cefrLevels = {
+    2: 'A2',
+    3: 'B1', 
+    4: 'B2',
+    5: 'C1',
+    6: 'C2'
+  };
+  
   // 加载配置
   chrome.storage.sync.get(['config'], (result) => {
     if (result.config) {
-      difficultyLevel.textContent = result.config.difficultyLevel || 5;
+      const level = result.config.difficultyLevel || 4;
+      difficultyLevel.textContent = cefrLevels[level] || level;
     }
   });
   

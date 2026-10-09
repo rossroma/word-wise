@@ -1,12 +1,17 @@
 // Background Service Worker for 智译插件
 
+importScripts('lib/translators.js');
+
 // 存储配置和状态
 let config = {
+  provider: 'auto',
+  autoTranslate: false,
   apiKey: '',
   modelName: 'gpt-3.5-turbo',
   baseUrl: 'https://api.openai.com/v1',
+  deeplApiKey: '',
   targetLanguage: 'zh-CN',
-  difficultyLevel: 5,
+  difficultyLevel: 4,
   whitelist: [],
   blacklist: []
 };
@@ -40,7 +45,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } 
     else if (request.action === 'translate') {
       handleTranslation(request.words, sender.tab?.id)
-        .then(translations => sendResponse({ success: true, translations }))
+        .then(result => sendResponse({ success: true, ...result }))
         .catch(error => {
           console.error('Translation error:', error);
           sendResponse({ success: false, error: error.message });
@@ -81,6 +86,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
       return true;
     }
+    else if (request.action === 'clearCache') {
+      chrome.storage.local.get(null, (all) => {
+        const keys = Object.keys(all).filter(k => k.startsWith('cache_'));
+        chrome.storage.local.remove(keys, () => {
+          sendResponse({ success: true, removed: keys.length });
+        });
+      });
+      return true;
+    }
     else {
       sendResponse({ success: false, error: '未知的操作' });
       return false;
@@ -106,101 +120,63 @@ async function handleTranslation(words, tabId) {
   // 获取最新配置
   const result = await chrome.storage.sync.get(['config']);
   const currentConfig = result.config || config;
-  
-  if (!currentConfig.apiKey) {
-    throw new Error('请先在设置中配置API Key');
-  }
-  
+  let provider = ZhiyiTranslators.resolveProvider(currentConfig);
+  const targetLanguage = currentConfig.targetLanguage || 'zh-CN';
+  console.log(`[智译] 收到翻译请求: ${words.length} 个词 | 选择引擎=${currentConfig.provider || 'auto'} 实际引擎=${provider} 基地址=${currentConfig.baseUrl || '-'} 模型=${currentConfig.modelName || '-'}`);
+
+  // 缓存键包含 引擎 + 目标语言,避免切换引擎/语言时命中旧结果
+  const cacheKeyFor = (w) =>
+    `cache_${provider}_${targetLanguage}_${w.word}_${(w.context || '').substring(0, 50)}`;
+
   // 检查缓存
-  const cacheKeys = words.map(w => `cache_${w.word}_${w.context.substring(0, 50)}`);
+  const cacheKeys = words.map(cacheKeyFor);
   const cached = await chrome.storage.local.get(cacheKeys);
-  
+
   const translations = {};
   const toTranslate = [];
-  
+  let cacheHits = 0;
+
   words.forEach((wordData, index) => {
     const cacheKey = cacheKeys[index];
-    if (cached[cacheKey]) {
+    if (cached[cacheKey] != null) {
       translations[wordData.word] = cached[cacheKey];
+      cacheHits++;
     } else {
       toTranslate.push(wordData);
     }
   });
-  
+
   // 批量翻译未缓存的词汇
   if (toTranslate.length > 0) {
-    const newTranslations = await batchTranslate(toTranslate, currentConfig);
-    
+    const res = await ZhiyiTranslators.translateBatch(toTranslate, currentConfig);
+    provider = res.provider;
+    const newTranslations = res.translations;
+
     // 更新缓存
     const cacheData = {};
-    toTranslate.forEach((wordData, index) => {
-      const cacheKey = `cache_${wordData.word}_${wordData.context.substring(0, 50)}`;
+    toTranslate.forEach((wordData) => {
+      const cacheKey = cacheKeyFor(wordData);
       const translation = newTranslations[wordData.word];
       cacheData[cacheKey] = translation;
       translations[wordData.word] = translation;
     });
-    
+
     await chrome.storage.local.set(cacheData);
   }
-  
-  return translations;
-}
 
-// 批量翻译
-async function batchTranslate(words, config) {
-  const translations = {};
-  
-  // 为了提高效率，使用批量请求（每次最多10个词）
-  const batchSize = 10;
-  for (let i = 0; i < words.length; i += batchSize) {
-    const batch = words.slice(i, i + batchSize);
-    const batchResults = await Promise.all(
-      batch.map(wordData => translateWord(wordData, config))
-    );
-    
-    batch.forEach((wordData, index) => {
-      translations[wordData.word] = batchResults[index];
-    });
-  }
-  
-  return translations;
-}
-
-// 调用AI API翻译单个词汇
-async function translateWord(wordData, config) {
-  const prompt = `Translate the English word "${wordData.word}" into Chinese. The context is: "${wordData.context}". Provide only the most concise and accurate Chinese translation of the word itself, without any extra explanation. Format: just the Chinese translation.`;
-  
-  try {
-    const response = await fetch(`${config.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${config.apiKey}`
-      },
-      body: JSON.stringify({
-        model: config.modelName,
-        messages: [
-          { role: 'system', content: 'You are a professional translator. Provide only the translation without explanations.' },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.3,
-        max_tokens: 100
-      })
-    });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || '翻译请求失败');
-    }
-    
-    const data = await response.json();
-    const translation = data.choices[0]?.message?.content?.trim() || wordData.word;
-    
-    return translation;
-  } catch (error) {
-    console.error('Translation error:', error);
-    return wordData.word; // 出错时返回原词
-  }
+  // 真实执行统计:引擎来自实际派发,而非用户选择
+  const stats = {
+    translations,
+    provider,
+    targetLanguage,
+    cacheHits,
+    translated: toTranslate.length,
+    total: words.length,
+  };
+  console.log(
+    `[智译] 实际引擎=${provider} 目标语言=${targetLanguage} 缓存命中=${cacheHits} 实际调用=${toTranslate.length} 共=${words.length}`
+  );
+  return stats;
 }
 
 // 监听标签页激活，更新图标状态
@@ -211,4 +187,3 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
     chrome.action.setBadgeBackgroundColor({ color: '#4CAF50', tabId: activeInfo.tabId });
   }
 });
-

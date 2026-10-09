@@ -2,6 +2,31 @@
 
 本文档记录智译浏览器插件的所有重要变更。
 
+## [2.0.0] - 2026-10-09
+
+### 🧠 疑难词判定重构
+- **替换** 固定 8,214 词表为本地 wordfreq(Zipf)判定；未登录词默认判为最难。学术/高级词命中率由约 19% 提升至 100%
+- **新增** `lib/en-zipf.js`(Zipf 词表)、`lib/word-difficulty.js`(判定器)、`tools/build_zipf_table.py`(离线生成)
+- **移除** `compromise` / `wdc-translator` 依赖；移除 `minLength=4` 限制
+
+### 🌐 可插拔翻译引擎
+- **新增** `lib/translators.js`：支持 `chrome`(内置离线) / `deepl` / `openai`(OpenAI 兼容)
+- **自动模式** 按翻译质量优先：LLM > DeepL > Chrome
+- **新增** 批量请求(每批约 50 词)与并发，替换原"逐词一次请求"
+- **移除** LibreTranslate
+
+### ⚙️ 体验
+- **新增** "检测到英文网页时自动翻译"开关；关闭时改为页面右侧的小图标激活
+- **优化** 激活提示由大横幅改为小图标
+- **优化** 按阅读顺序分批翻译、渐进注入(页面上方先出结果)
+- **修复** 缓存键未包含引擎/语言，导致切换引擎命中旧结果
+- **新增** 设置页"清除翻译缓存"；日志回传"实际执行引擎"
+
+### 📄 文档
+- **新增** `API_KEYS_GUIDE.md`(各引擎 Key 申请与测试)
+- **重写** README / INSTALL / QUICKSTART / TROUBLESHOOTING 至当前实现
+- **删除** 过时与开发辅助文档(FIX_SUMMARY、MIGRATION_GUIDE、LIBRARY_ISSUE、PERFORMANCE_* 等)
+
 ## [1.0.4] - 2025-10-11
 
 ### 🔄 架构调整
@@ -83,7 +108,7 @@
 
 ### 📚 文档
 
-- **新增** [OPTIMIZATION_CHUNKING.md](./OPTIMIZATION_CHUNKING.md) - 文本分块优化详解
+- **新增** 文本分块优化详解文档
 
 ### 🎯 未来改进方向
 
@@ -138,8 +163,8 @@
   - `enable()/disable()` - 控制监控开关
   
 #### 文档支持
-- **新增** [PERFORMANCE_LOG.md](./PERFORMANCE_LOG.md) - 详细使用指南
-- **新增** [PERFORMANCE_TEST.md](./PERFORMANCE_TEST.md) - 快速测试指南
+- **新增** 性能监控使用指南
+- **新增** 性能监控快速测试指南
 - **更新** [README.md](./README.md) - 添加性能监控章节
 
 ### 🎯 改进
@@ -266,8 +291,8 @@
 - 完整的README主文档
 - 详细的安装指南（INSTALL.md）
 - 快速开始教程（QUICKSTART.md）
-- 贡献者指南（CONTRIBUTING.md）
-- 项目总结（PROJECT_SUMMARY.md）
+- 贡献者指南
+- 项目总结
 
 ### 🔧 技术实现
 - Chrome Manifest V3标准
@@ -324,4 +349,3 @@
 如有问题或建议，请访问：
 - Issues: https://github.com/your-username/wdc-extension/issues
 - Discussions: https://github.com/your-username/wdc-extension/discussions
-

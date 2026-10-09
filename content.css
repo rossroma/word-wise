@@ -1,76 +1,33 @@
 /* Content Script样式 - 注入到网页中 */
 
-/* 激活提示框 */
-.zhiyi-activation-prompt {
+/* 激活小图标(替代原大提示框) */
+.zhiyi-activation-icon {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 999999;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  padding: 20px;
-  max-width: 320px;
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(400px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-.zhiyi-prompt-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.zhiyi-prompt-text {
-  font-size: 15px;
-  color: #333;
-  font-weight: 500;
-  line-height: 1.5;
-}
-
-.zhiyi-prompt-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-.zhiyi-btn {
-  flex: 1;
-  padding: 10px 20px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.zhiyi-btn-primary {
+  border-radius: 8px 0 0 8px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.45;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.zhiyi-btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.zhiyi-btn-secondary {
-  background: #f0f0f0;
-  color: #666;
-}
-
-.zhiyi-btn-secondary:hover {
-  background: #e0e0e0;
+.zhiyi-activation-icon:hover {
+  opacity: 1;
 }
 
 /* 翻译词汇样式 */
@@ -211,13 +168,6 @@ body[data-theme="dark"] .zhiyi-word,
 
 /* 响应式适配 */
 @media (max-width: 768px) {
-  .zhiyi-activation-prompt {
-    top: 10px;
-    right: 10px;
-    left: 10px;
-    max-width: none;
-  }
-  
   .zhiyi-translation {
     font-size: 0.85em;
   }
@@ -233,4 +183,3 @@ body[data-theme="dark"] .zhiyi-word,
     border: none;
   }
 }
-
