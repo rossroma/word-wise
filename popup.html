@@ -8,59 +8,34 @@
 </head>
 <body>
   <div class="popup-container">
-    <div class="header">
-      <h1>智译</h1>
-      <p class="subtitle">Smart Translation</p>
-    </div>
-    
-    <div class="main-content">
+    <header class="header">
+      <div class="brand"><img src="icons/icon48.png" width="30" height="30" alt=""><span>智译</span><span class="brand-caption">阅读助手</span></div>
+      <p class="header-note">把注意力留给阅读。</p>
+    </header>
+
+    <main class="main-content">
       <div class="status-section">
         <div class="status-info">
-          <span class="status-label">当前页面翻译:</span>
-          <span class="status-indicator" id="statusIndicator">未激活</span>
+          <span class="status-label" id="toggleLabel">当前页面翻译</span>
+          <span class="status-indicator inactive" id="statusIndicator" role="status" aria-live="polite">未激活</span>
         </div>
-        
-        <label class="toggle-switch">
-          <input type="checkbox" id="toggleTranslation">
-          <span class="slider"></span>
+        <label class="toggle-switch" for="toggleTranslation">
+          <input type="checkbox" id="toggleTranslation" role="switch" aria-labelledby="toggleLabel" aria-describedby="statusIndicator">
+          <span class="slider" aria-hidden="true"></span>
         </label>
       </div>
-      
-      <div class="divider"></div>
-      
-      <div class="info-section">
-        <div class="info-item">
-          <span class="info-icon">📚</span>
-          <span class="info-text" id="wordCount">已翻译: 0 个词汇</span>
-        </div>
-        
-        <div class="info-item">
-          <span class="info-icon">⚙️</span>
-          <span class="info-text">英语水平: <span id="difficultyLevel">B2</span></span>
-        </div>
+
+      <div class="reading-stats" aria-label="阅读概况">
+        <div class="stat"><span class="stat-label">已翻译词汇</span><strong id="wordCount">0</strong></div>
+        <div class="stat"><span class="stat-label">英语水平</span><strong id="difficultyLevel">B2</strong></div>
       </div>
-      
-      <div class="divider"></div>
-      
+
       <div class="actions">
-        <button class="action-btn" id="settingsBtn">
-          <span class="btn-icon">⚙️</span>
-          <span>设置</span>
-        </button>
-        
-        <button class="action-btn" id="feedbackBtn">
-          <span class="btn-icon">💬</span>
-          <span>反馈</span>
-        </button>
+        <button type="button" class="action-btn" id="settingsBtn"><span>偏好设置</span><span class="action-arrow" aria-hidden="true">↗</span></button>
       </div>
-    </div>
-    
-    <div class="footer">
-      <p>智能识别疑难词汇，提升阅读效率</p>
-    </div>
+    </main>
+    <footer class="footer">智译 <span>·</span> 让英文阅读更轻松</footer>
   </div>
-  
   <script src="popup.js"></script>
 </body>
 </html>
-

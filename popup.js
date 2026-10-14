@@ -4,11 +4,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   const toggleSwitch = document.getElementById('toggleTranslation');
   const statusIndicator = document.getElementById('statusIndicator');
   const difficultyLevel = document.getElementById('difficultyLevel');
+  const wordCount = document.getElementById('wordCount');
   const settingsBtn = document.getElementById('settingsBtn');
-  const feedbackBtn = document.getElementById('feedbackBtn');
+  settingsBtn.addEventListener('click', () => chrome.runtime.openOptionsPage());
   
   // 获取当前标签页
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) {
+    toggleSwitch.disabled = true;
+    statusIndicator.textContent = '此页面不可翻译';
+    return;
+  }
+
+  async function refreshWordCount() {
+    try {
+      const result = await chrome.tabs.sendMessage(tab.id, { action: 'getTranslatedCount' });
+      wordCount.textContent = String(result?.count ?? 0);
+    } catch (error) {
+      wordCount.textContent = '—';
+    }
+  }
+  refreshWordCount();
+  // 翻译是异步注入的，弹窗打开期间持续更新可见词数。
+  setInterval(refreshWordCount, 1200);
   
   // CEFR等级映射
   const cefrLevels = {
@@ -54,6 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       
       updateStatus(enabled);
+      await refreshWordCount();
       
       // 更新徽章
       if (enabled) {
@@ -76,20 +95,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           // 恢复开关状态
           toggleSwitch.checked = !enabled;
         }
+        updateStatus(toggleSwitch.checked);
       }
     }
-  });
-  
-  // 设置按钮
-  settingsBtn.addEventListener('click', () => {
-    chrome.runtime.openOptionsPage();
-  });
-  
-  // 反馈按钮
-  feedbackBtn.addEventListener('click', () => {
-    chrome.tabs.create({
-      url: 'https://github.com/your-repo/wdc-extension/issues'
-    });
   });
   
   // 更新状态显示
@@ -103,4 +111,3 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 });
-
