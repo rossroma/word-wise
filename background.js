@@ -1,4 +1,4 @@
-// Background Service Worker for 智译插件
+// Background Service Worker for 拾词插件
 
 importScripts('lib/translators.js');
 const debugLog = (enabled, ...args) => { if (enabled) console.log(...args); };
@@ -129,7 +129,7 @@ async function handleTranslation(words, tabId) {
   debugEnabled = !!currentConfig.debugLogging;
   let provider = ZhiyiTranslators.resolveProvider(currentConfig);
   const targetLanguage = currentConfig.targetLanguage || 'zh-CN';
-  debugLog(debugEnabled, `[智译] 收到翻译请求: ${words.length} 个词 | 选择引擎=${currentConfig.provider || 'auto'} 实际引擎=${provider} 基地址=${currentConfig.baseUrl || '-'} 模型=${currentConfig.modelName || '-'}`);
+  debugLog(debugEnabled, `[拾词] 收到翻译请求: ${words.length} 个词 | 选择引擎=${currentConfig.provider || 'auto'} 实际引擎=${provider} 基地址=${currentConfig.baseUrl || '-'} 模型=${currentConfig.modelName || '-'}`);
 
   // 缓存键包含 引擎 + 目标语言,避免切换引擎/语言时命中旧结果
   const cacheKeyFor = (w) =>
@@ -180,7 +180,7 @@ async function handleTranslation(words, tabId) {
     translated: toTranslate.length,
     total: words.length,
   };
-  debugLog(debugEnabled, `[智译] 实际引擎=${provider} 目标语言=${targetLanguage} 缓存命中=${cacheHits} 实际调用=${toTranslate.length} 共=${words.length}`);
+  debugLog(debugEnabled, `[拾词] 实际引擎=${provider} 目标语言=${targetLanguage} 缓存命中=${cacheHits} 实际调用=${toTranslate.length} 共=${words.length}`);
   return stats;
 }
 

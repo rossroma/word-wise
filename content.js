@@ -581,7 +581,7 @@ async function startTranslation() {
       const note = totalTranslated === 0
         ? `（全部命中缓存，本次未实际调用引擎；结果来源=${providerLabel}）`
         : `（缓存命中 ${totalCacheHits}，实际调用 ${totalTranslated}，分 ${pages.length} 批）`;
-      debugLog(`🔌 [智译] 实际执行引擎: ${providerLabel} ${note}`);
+      debugLog(`🔌 [拾词] 实际执行引擎: ${providerLabel} ${note}`);
       window.zhiyiDebug.lastTranslation = {
         provider: usedProvider,
         pages: pages.length,
@@ -831,7 +831,7 @@ function injectTranslations(translations) {
 function showError(message) {
   const errorDiv = document.createElement('div');
   errorDiv.className = 'zhiyi-error-toast';
-  errorDiv.textContent = `智译错误: ${message}`;
+  errorDiv.textContent = `拾词错误: ${message}`;
   document.body.appendChild(errorDiv);
   
   setTimeout(() => {
