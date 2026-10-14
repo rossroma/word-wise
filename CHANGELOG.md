@@ -347,5 +347,5 @@
 ## 反馈
 
 如有问题或建议，请访问：
-- Issues: https://github.com/your-username/wdc-extension/issues
-- Discussions: https://github.com/your-username/wdc-extension/discussions
+- Issues: https://github.com/rossroma/word-wise/issues
+- Discussions: https://github.com/rossroma/word-wise/discussions
