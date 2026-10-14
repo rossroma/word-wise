@@ -1,5 +1,5 @@
 {
-  "name": "zhiyi-smart-translation",
+  "name": "wordwise-extension",
   "version": "1.0.0",
   "description": "智能识别并翻译网页中的疑难词汇，提升英文阅读效率",
   "main": "background.js",
@@ -8,11 +8,11 @@
     "lint": "eslint *.js",
     "format": "prettier --write '**/*.{js,json,html,css,md}'",
     "test": "echo 'No tests configured yet'",
-    "package": "zip -r zhiyi-extension.zip . -x '*.git*' -x 'node_modules/*' -x '*.zip' -x 'package-lock.json'"
+    "package": "zip -r wordwise-extension.zip . -x '*.git*' -x 'node_modules/*' -x '*.zip' -x 'package-lock.json'"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-username/wdc-extension.git"
+    "url": "git+https://github.com/rossroma/word-wise.git"
   },
   "keywords": [
     "chrome-extension",
@@ -27,9 +27,9 @@
   "author": "Your Name <your-email@example.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/your-username/wdc-extension/issues"
+    "url": "https://github.com/rossroma/word-wise/issues"
   },
-  "homepage": "https://github.com/your-username/wdc-extension#readme",
+  "homepage": "https://github.com/rossroma/word-wise#readme",
   "devDependencies": {
     "eslint": "^8.50.0",
     "prettier": "^3.0.3"
@@ -41,4 +41,3 @@
     "chrome": ">=88"
   }
 }
-
