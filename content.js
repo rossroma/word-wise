@@ -2,13 +2,28 @@
 
 let isActivated = false;
 let config = null;
+let debugEnabled = false;
+const debugLog = (...args) => { if (debugEnabled) console.log(...args); };
+const debugWarn = (...args) => { if (debugEnabled) console.warn(...args); };
+const debugTable = (...args) => { if (debugEnabled) console.table(...args); };
+const debugGroup = (...args) => { if (debugEnabled) console.group(...args); };
+const debugGroupEnd = () => { if (debugEnabled) console.groupEnd(); };
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'sync' && changes.config) {
+    config = changes.config.newValue || {};
+    debugEnabled = !!config.debugLogging;
+    perfLogger.enabled = debugEnabled;
+    if (!debugEnabled) perfLogger.clear();
+  }
+});
 
 // ========== 性能监控工具 ==========
 class PerformanceLogger {
   constructor() {
     this.logs = new Map(); // 存储所有日志
     this.timers = new Map(); // 存储计时器
-    this.enabled = true; // 是否启用日志
+    this.enabled = false; // 由设置页的调试开关控制
   }
 
   // 开始计时
@@ -31,10 +46,7 @@ class PerformanceLogger {
     const key = `${category}:${name}`;
     const timer = this.timers.get(key);
     
-    if (!timer) {
-      console.warn(`未找到计时器: ${key}`);
-      return;
-    }
+    if (!timer) return;
     
     const endTime = performance.now();
     const duration = endTime - timer.startTime;
@@ -56,7 +68,7 @@ class PerformanceLogger {
     
     // 实时输出（可选）
     if (duration > 100) { // 只显示耗时超过100ms的操作
-      console.log(`⏱️ [${category}] ${name}: ${duration.toFixed(2)}ms`, extraData);
+      debugLog(`⏱️ [${category}] ${name}: ${duration.toFixed(2)}ms`, extraData);
     }
   }
 
@@ -64,7 +76,7 @@ class PerformanceLogger {
   report(category = null) {
     if (!this.enabled) return;
     
-    console.group('📊 性能统计报告');
+    debugGroup('📊 性能统计报告');
     
     const categories = category ? [category] : Array.from(this.logs.keys());
     
@@ -72,8 +84,8 @@ class PerformanceLogger {
       const logs = this.logs.get(cat);
       if (!logs || logs.length === 0) return;
       
-      console.group(`📁 ${cat}`);
-      console.table(logs);
+      debugGroup(`📁 ${cat}`);
+      debugTable(logs);
       
       // 计算统计信息
       const durations = logs.map(log => parseFloat(log.duration));
@@ -82,11 +94,11 @@ class PerformanceLogger {
       const max = Math.max(...durations);
       const min = Math.min(...durations);
       
-      console.log(`总计: ${total.toFixed(2)}ms | 平均: ${avg.toFixed(2)}ms | 最大: ${max.toFixed(2)}ms | 最小: ${min.toFixed(2)}ms`);
-      console.groupEnd();
+      debugLog(`总计: ${total.toFixed(2)}ms | 平均: ${avg.toFixed(2)}ms | 最大: ${max.toFixed(2)}ms | 最小: ${min.toFixed(2)}ms`);
+      debugGroupEnd();
     });
     
-    console.groupEnd();
+    debugGroupEnd();
   }
 
   // 清除日志
@@ -134,9 +146,7 @@ window.zhiyiProviderName = (provider) => ({
 window.zhiyiPerf = {
   report: () => perfLogger.report(),
   clear: () => perfLogger.clear(),
-  stats: () => perfLogger.getStats(),
-  enable: () => perfLogger.enabled = true,
-  disable: () => perfLogger.enabled = false
+  stats: () => perfLogger.getStats()
 };
 
 // 在控制台暴露调试功能
@@ -165,8 +175,8 @@ window.zhiyiDebug = {
       }
     }
     
-    console.log(`找到 ${results.length} 个包含 "${word}" 的节点:`);
-    console.table(results);
+    debugLog(`找到 ${results.length} 个包含 "${word}" 的节点:`);
+    debugTable(results);
     return results;
   },
   
@@ -176,7 +186,7 @@ window.zhiyiDebug = {
       'zhiyi-word': document.querySelectorAll('.zhiyi-word').length,
       'zhiyi-translation': document.querySelectorAll('.zhiyi-translation').length
     };
-    console.log('翻译元素统计:', stats);
+    debugLog('翻译元素统计:', stats);
     return stats;
   },
   
@@ -198,16 +208,16 @@ window.zhiyiDebug = {
       }
     });
     
-    console.log(`发现 ${duplicates.length} 个可能的重复翻译:`);
-    console.table(duplicates);
+    debugLog(`发现 ${duplicates.length} 个可能的重复翻译:`);
+    debugTable(duplicates);
     return duplicates;
   }
 };
 
-console.log('🔍 调试工具已加载，使用 window.zhiyiDebug 访问:');
-console.log('  - zhiyiDebug.findWord("exceptions") - 查找包含某词的所有节点');
-console.log('  - zhiyiDebug.countElements() - 统计翻译元素数量');
-console.log('  - zhiyiDebug.checkDuplicates() - 检查重复翻译');
+debugLog('🔍 调试工具已加载，使用 window.zhiyiDebug 访问:');
+debugLog('  - zhiyiDebug.findWord("exceptions") - 查找包含某词的所有节点');
+debugLog('  - zhiyiDebug.countElements() - 统计翻译元素数量');
+debugLog('  - zhiyiDebug.checkDuplicates() - 检查重复翻译');
 // ========================================
 
 // 安全地发送消息，带重试机制
@@ -226,7 +236,7 @@ async function sendMessageSafely(message, retries = 3, timeoutMs = 60000) {
       ]);
       return response;
     } catch (error) {
-      console.warn(`消息发送失败 (尝试 ${i + 1}/${retries}):`, error.message);
+      debugWarn(`消息发送失败 (尝试 ${i + 1}/${retries}):`, error.message);
       
       // 如果是最后一次尝试，抛出错误
       if (i === retries - 1) {
@@ -254,6 +264,8 @@ async function sendMessageSafely(message, retries = 3, timeoutMs = 60000) {
     perfLogger.start('获取配置', '系统启动');
     const configResponse = await sendMessageSafely({ action: 'getConfig' });
     config = configResponse?.config || {};
+    debugEnabled = !!config.debugLogging;
+    perfLogger.enabled = debugEnabled;
     perfLogger.end('获取配置', '系统启动');
   
   // 检测页面语言
@@ -266,13 +278,13 @@ async function sendMessageSafely(message, retries = 3, timeoutMs = 60000) {
       await sendMessageSafely({
       action: 'detectLanguage',
       data: { isEnglish: true }
-      }).catch(err => console.warn('语言检测通知失败:', err));
+      }).catch(err => debugWarn('语言检测通知失败:', err));
     
     // autoTranslate 开启,或本标签页此前已激活 → 直接翻译;否则显示小图标
     if (config?.autoTranslate || isActivated) {
       if (!isActivated) {
         isActivated = true;
-        sendMessageSafely({ action: 'setActivation', activated: true }).catch(err => console.warn('设置激活状态失败:', err));
+        sendMessageSafely({ action: 'setActivation', activated: true }).catch(err => debugWarn('设置激活状态失败:', err));
       }
       startTranslation();
     } else {
@@ -334,28 +346,91 @@ function showActivationPrompt() {
   icon.id = 'zhiyi-activation-icon';
   icon.className = 'zhiyi-activation-icon';
   icon.type = 'button';
-  icon.title = '翻译本页疑难词';
-  icon.setAttribute('aria-label', '翻译本页疑难词');
+  icon.title = '点击翻译本页 · 上下拖动调整位置';
+  icon.setAttribute('aria-label', '翻译本页疑难词，可上下拖动调整位置');
   icon.textContent = '译';
 
+  const positionKey = 'zhiyi_activation_position';
+  const edgeGap = 8;
+  const defaultTop = () => Math.max(edgeGap, (window.innerHeight - icon.offsetHeight) / 2);
+  const clampTop = top => Math.max(edgeGap, Math.min(top, Math.max(edgeGap, window.innerHeight - icon.offsetHeight - edgeGap)));
+  const positionIcon = top => { icon.style.top = `${clampTop(top)}px`; };
+  const savePosition = () => {
+    const available = window.innerHeight - icon.offsetHeight - edgeGap * 2;
+    const fraction = available > 0 ? (icon.getBoundingClientRect().top - edgeGap) / available : 0.5;
+    chrome.storage.local.set({ [positionKey]: Math.max(0, Math.min(1, fraction)) });
+  };
+  const restorePosition = fraction => {
+    if (typeof fraction !== 'number' || !Number.isFinite(fraction)) return;
+    positionIcon(edgeGap + fraction * Math.max(0, window.innerHeight - icon.offsetHeight - edgeGap * 2));
+  };
+  let activePointer = null;
+  let suppressClick = false;
+  let positionChanged = false;
+
+  icon.addEventListener('pointerdown', event => {
+    if (event.button !== 0 || activePointer) return;
+    suppressClick = false;
+    activePointer = { id: event.pointerId, startY: event.clientY, startTop: icon.getBoundingClientRect().top, moved: false };
+    icon.setPointerCapture(event.pointerId);
+  });
+  icon.addEventListener('pointermove', event => {
+    if (!activePointer || event.pointerId !== activePointer.id) return;
+    const distance = event.clientY - activePointer.startY;
+    if (!activePointer.moved && Math.abs(distance) < 5) return;
+    activePointer.moved = true;
+    positionChanged = true;
+    icon.classList.add('zhiyi-dragging');
+    positionIcon(activePointer.startTop + distance);
+  });
+  const finishDrag = event => {
+    if (!activePointer || event.pointerId !== activePointer.id) return;
+    if (activePointer.moved) {
+      suppressClick = event.type === 'pointerup';
+      if (event.type === 'pointerup') savePosition();
+    }
+    icon.classList.remove('zhiyi-dragging');
+    activePointer = null;
+  };
+  icon.addEventListener('pointerup', finishDrag);
+  icon.addEventListener('pointercancel', finishDrag);
+  const handleResize = () => positionIcon(icon.getBoundingClientRect().top);
+  window.addEventListener('resize', handleResize);
+  icon.addEventListener('keydown', event => {
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+    event.preventDefault();
+    positionChanged = true;
+    positionIcon(icon.getBoundingClientRect().top + (event.key === 'ArrowUp' ? -20 : 20));
+    savePosition();
+  });
+
   icon.addEventListener('click', async () => {
+    if (suppressClick) {
+      suppressClick = false;
+      return;
+    }
     isActivated = true;
     icon.remove();
+    window.removeEventListener('resize', handleResize);
     try {
       await sendMessageSafely({ action: 'setActivation', activated: true });
     } catch (error) {
-      console.warn('设置激活状态失败:', error);
+      debugWarn('设置激活状态失败:', error);
     }
     startTranslation();
   });
 
   document.body.appendChild(icon);
+  positionIcon(defaultTop());
+  chrome.storage.local.get([positionKey], result => {
+    if (icon.isConnected && !activePointer && !positionChanged) restorePosition(result[positionKey]);
+  });
 }
 
 // 开始翻译流程
 async function startTranslation() {
-  console.log('🔍 [调试] ========== startTranslation 被调用 ==========');
-  console.log('🔍 [调试] 调用栈:', new Error().stack);
+  debugLog('🔍 [调试] ========== startTranslation 被调用 ==========');
+  if (debugEnabled) debugLog('🔍 [调试] 调用栈:', new Error().stack);
   
   perfLogger.start('翻译流程', '翻译处理');
   
@@ -366,7 +441,7 @@ async function startTranslation() {
     perfLogger.end('提取主体内容', '翻译处理', { 内容长度: mainContent?.length || 0 });
     
     if (!mainContent) {
-      console.warn('未找到主体内容区域');
+      debugWarn('未找到主体内容区域');
       perfLogger.end('翻译流程', '翻译处理', { 错误: '未找到内容' });
       return;
     }
@@ -406,7 +481,7 @@ async function startTranslation() {
       平均块大小: Math.round(mainContent.length / chunks.length)
     });
     
-    console.log(`文本已分成 ${chunks.length} 个块进行处理`);
+    debugLog(`文本已分成 ${chunks.length} 个块进行处理`);
     
     const allDifficultWords = new Map(); // word -> {word, zipf, context}，按词去重
     let processedChunks = 0;
@@ -431,11 +506,11 @@ async function startTranslation() {
         
         // 每处理5个块输出一次进度
         if (processedChunks % 5 === 0) {
-          console.log(`已处理 ${processedChunks}/${chunks.length} 个块，发现 ${allDifficultWords.size} 个疑难词汇`);
-          console.log(`平均处理速度: ${(totalProcessingTime / processedChunks).toFixed(2)}ms/块`);
+          debugLog(`已处理 ${processedChunks}/${chunks.length} 个块，发现 ${allDifficultWords.size} 个疑难词汇`);
+          debugLog(`平均处理速度: ${(totalProcessingTime / processedChunks).toFixed(2)}ms/块`);
         }
-      } catch (error) {
-        console.warn(`处理第 ${processedChunks + 1} 个文本块时出错:`, error);
+        } catch (error) {
+          console.error(`处理第 ${processedChunks + 1} 个文本块时出错:`, error);
       }
     }
     
@@ -453,15 +528,15 @@ async function startTranslation() {
       处理速度: (mainContent.length / totalProcessingTime * 1000).toFixed(0) + '字符/秒'
     });
     
-    console.log(`使用 wordfreq 判定完成（阈值 ${zipfThreshold}），共发现 ${difficultWords.length} 个不重复的疑难词汇`);
+    debugLog(`使用 wordfreq 判定完成（阈值 ${zipfThreshold}），共发现 ${difficultWords.length} 个不重复的疑难词汇`);
     
     if (difficultWords.length === 0) {
-      console.log('未发现疑难词汇');
+      debugLog('未发现疑难词汇');
       perfLogger.end('翻译流程', '翻译处理', { 词汇数: 0 });
       return;
     }
     
-    console.log(`发现 ${difficultWords.length} 个疑难词汇`);
+    debugLog(`发现 ${difficultWords.length} 个疑难词汇`);
     
     // 3. 按阅读顺序分批翻译,边翻边注入(页面上方的先出结果)
     const PAGE_SIZE = 50;
@@ -506,7 +581,7 @@ async function startTranslation() {
       const note = totalTranslated === 0
         ? `（全部命中缓存，本次未实际调用引擎；结果来源=${providerLabel}）`
         : `（缓存命中 ${totalCacheHits}，实际调用 ${totalTranslated}，分 ${pages.length} 批）`;
-      console.log(`🔌 [智译] 实际执行引擎: ${providerLabel} ${note}`);
+      debugLog(`🔌 [智译] 实际执行引擎: ${providerLabel} ${note}`);
       window.zhiyiDebug.lastTranslation = {
         provider: usedProvider,
         pages: pages.length,
@@ -643,7 +718,7 @@ function getTextNodes(element) {
 
 // 注入翻译结果到DOM
 function injectTranslations(translations) {
-  console.log('🔍 [调试] 开始注入翻译，翻译词汇:', Object.keys(translations));
+  debugLog('🔍 [调试] 开始注入翻译，翻译词汇:', Object.keys(translations));
   perfLogger.start('DOM遍历', 'DOM操作');
   
   const walker = document.createTreeWalker(
@@ -688,9 +763,9 @@ function injectTranslations(translations) {
     // 特别关注包含 "exceptions" 的节点
     const containsExceptions = /exceptions/i.test(text);
     if (containsExceptions) {
-      console.log(`🔍 [调试-${nodeIndex}] 发现包含 "exceptions" 的节点:`);
-      console.log(`  原始文本: "${text.substring(0, 200)}..."`);
-      console.log(`  父元素: ${textNode.parentElement?.tagName}.${textNode.parentElement?.className}`);
+      debugLog(`🔍 [调试-${nodeIndex}] 发现包含 "exceptions" 的节点:`);
+      debugLog(`  原始文本: "${text.substring(0, 200)}..."`);
+      debugLog(`  父元素: ${textNode.parentElement?.tagName}.${textNode.parentElement?.className}`);
     }
     
     // 收集所有需要替换的位置（避免重复替换）
@@ -747,9 +822,8 @@ function injectTranslations(translations) {
     匹配次数: matchCount
   });
   
-  console.log('🔍 [调试] 翻译注入完成，共处理', nodesToProcess.length, '个节点，替换', replacedCount, '个节点');
-  console.log('🔍 [调试] 最终页面中包含 zhiyi-word 的元素数量:', document.querySelectorAll('.zhiyi-word').length);
-  console.log('🔍 [调试] 最终页面中包含 zhiyi-word 的元素数量:', document.querySelectorAll('.zhiyi-word').length);
+  debugLog('🔍 [调试] 翻译注入完成，共处理', nodesToProcess.length, '个节点，替换', replacedCount, '个节点');
+  debugLog('🔍 [调试] 最终页面中包含 zhiyi-word 的元素数量:', document.querySelectorAll('.zhiyi-word').length);
 }
 
 
@@ -767,20 +841,20 @@ function showError(message) {
 
 // 监听来自popup的消息
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('🔍 [调试] 收到消息:', request);
+  debugLog('🔍 [调试] 收到消息:', request);
   
   if (request.action === 'toggleTranslation') {
-    console.log('🔍 [调试] toggleTranslation 消息，enabled:', request.enabled);
+    debugLog('🔍 [调试] toggleTranslation 消息，enabled:', request.enabled);
     isActivated = request.enabled;
     
     if (isActivated) {
-      console.log('🔍 [调试] 准备启动翻译...');
+      debugLog('🔍 [调试] 准备启动翻译...');
       startTranslation();
     } else {
-      console.log('🔍 [调试] 移除所有翻译...');
+      debugLog('🔍 [调试] 移除所有翻译...');
       // 去掉翻译、保留原词
       const words = document.querySelectorAll('.zhiyi-word');
-      console.log('🔍 [调试] 找到', words.length, '个需要还原的元素');
+      debugLog('🔍 [调试] 找到', words.length, '个需要还原的元素');
       words.forEach(el => {
         const trans = el.querySelector('.zhiyi-translation');
         if (trans) trans.remove();
@@ -791,5 +865,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     
     sendResponse({ success: true });
+  } else if (request.action === 'getTranslatedCount') {
+    sendResponse({ count: document.querySelectorAll('.zhiyi-translation').length });
   }
 });
