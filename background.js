@@ -1,6 +1,12 @@
 // Background Service Worker for 智译插件
 
 importScripts('lib/translators.js');
+const debugLog = (enabled, ...args) => { if (enabled) console.log(...args); };
+let debugEnabled = false;
+chrome.storage.sync.get(['config'], result => { debugEnabled = !!result.config?.debugLogging; });
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'sync' && changes.config) debugEnabled = !!changes.config.newValue?.debugLogging;
+});
 
 // 存储配置和状态
 let config = {
@@ -120,9 +126,10 @@ async function handleTranslation(words, tabId) {
   // 获取最新配置
   const result = await chrome.storage.sync.get(['config']);
   const currentConfig = result.config || config;
+  debugEnabled = !!currentConfig.debugLogging;
   let provider = ZhiyiTranslators.resolveProvider(currentConfig);
   const targetLanguage = currentConfig.targetLanguage || 'zh-CN';
-  console.log(`[智译] 收到翻译请求: ${words.length} 个词 | 选择引擎=${currentConfig.provider || 'auto'} 实际引擎=${provider} 基地址=${currentConfig.baseUrl || '-'} 模型=${currentConfig.modelName || '-'}`);
+  debugLog(debugEnabled, `[智译] 收到翻译请求: ${words.length} 个词 | 选择引擎=${currentConfig.provider || 'auto'} 实际引擎=${provider} 基地址=${currentConfig.baseUrl || '-'} 模型=${currentConfig.modelName || '-'}`);
 
   // 缓存键包含 引擎 + 目标语言,避免切换引擎/语言时命中旧结果
   const cacheKeyFor = (w) =>
@@ -173,9 +180,7 @@ async function handleTranslation(words, tabId) {
     translated: toTranslate.length,
     total: words.length,
   };
-  console.log(
-    `[智译] 实际引擎=${provider} 目标语言=${targetLanguage} 缓存命中=${cacheHits} 实际调用=${toTranslate.length} 共=${words.length}`
-  );
+  debugLog(debugEnabled, `[智译] 实际引擎=${provider} 目标语言=${targetLanguage} 缓存命中=${cacheHits} 实际调用=${toTranslate.length} 共=${words.length}`);
   return stats;
 }
 
