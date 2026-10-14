@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "智译 - Smart Translation",
+  "name": "拾词 - Wordwise",
   "version": "1.0.4",
   "description": "智能识别并翻译网页中的疑难词汇，提升英文阅读效率",
   "icons": {
