@@ -1,8 +1,8 @@
-# 智译 (Smart Translation) - Chrome 浏览器插件
+# 拾词 (Wordwise) - Chrome 浏览器插件
 
 <div align="center">
 
-![智译Logo](icons/icon128.png)
+![拾词 Logo](icons/icon128.png)
 
 **智能识别并翻译网页中的疑难词汇，提升英文阅读效率**
 
@@ -15,7 +15,7 @@
 
 ## 📖 产品简介
 
-"智译"面向非英语母语用户、英语学习者和需要高效阅读英文资料的专业人士。它自动识别网页中的疑难词汇，并在原文旁以浅色括号标注中文翻译，降低英文阅读门槛。
+“拾词”（Wordwise）面向非英语母语用户、英语学习者和需要高效阅读英文资料的专业人士。它自动识别网页中的疑难词汇，并在原文旁以浅色括号标注中文翻译，降低英文阅读门槛。
 
 ### ✨ 核心功能
 
@@ -35,7 +35,7 @@
 ### 安装
 
 ```bash
-git clone https://github.com/your-username/wdc-extension.git
+git clone https://github.com/rossroma/word-wise.git
 ```
 
 打开 `chrome://extensions/` → 开启"开发者模式" → "加载已解压的扩展程序" → 选择本项目文件夹。详见 [INSTALL.md](./INSTALL.md)。
@@ -82,7 +82,7 @@ git clone https://github.com/your-username/wdc-extension.git
 ### 项目结构
 
 ```
-wdc-extension/
+word-wise/
 ├── manifest.json            # 扩展配置 (Manifest V3)
 ├── background.js            # Service Worker：翻译调度与缓存
 ├── content.js               # 内容脚本：选词、注入、交互
@@ -163,8 +163,8 @@ wdc-extension/
 
 ## 💬 反馈与支持
 
-- **问题反馈**：[GitHub Issues](https://github.com/your-username/wdc-extension/issues)
-- **功能建议**：[GitHub Discussions](https://github.com/your-username/wdc-extension/discussions)
+- **问题反馈**：[GitHub Issues](https://github.com/rossroma/word-wise/issues)
+- **功能建议**：[GitHub Discussions](https://github.com/rossroma/word-wise/discussions)
 
 ---
 

@@ -1,6 +1,6 @@
 # 安装指南
 
-本文档详细说明如何安装和配置"智译"浏览器插件。
+本文档详细说明如何安装和配置“拾词”（Wordwise）浏览器插件。
 
 ## 📦 安装方式
 
@@ -8,10 +8,10 @@
 
 > 注意：插件尚未发布到Chrome Web Store，敬请期待。
 
-1. 访问Chrome Web Store中的智译插件页面
+1. 访问 Chrome Web Store 中的拾词插件页面
 2. 点击"添加至Chrome"按钮
 3. 在弹出的确认对话框中点击"添加扩展程序"
-4. 安装完成后，浏览器右上角会出现智译图标
+4. 安装完成后，浏览器右上角会出现拾词图标
 
 ### 方式二：本地开发者模式安装
 
@@ -19,8 +19,8 @@
 
 ```bash
 # 克隆或下载项目
-git clone https://github.com/your-username/wdc-extension.git
-cd wdc-extension
+git clone https://github.com/rossroma/word-wise.git
+cd word-wise
 
 # 或者直接下载ZIP并解压
 ```
@@ -50,8 +50,8 @@ convert icon.svg -resize 128x128 icon128.png
 #### 步骤4: 验证安装
 
 安装成功后，您应该能看到：
-- 浏览器右上角出现智译图标
-- 在扩展程序页面看到"智译 - Smart Translation"
+- 浏览器右上角出现拾词图标
+- 在扩展程序页面看到“拾词 - Wordwise”
 - 状态显示为"已启用"
 
 ## ⚙️ 初始配置
@@ -131,7 +131,7 @@ convert icon.svg -resize 128x128 icon128.png
 1. 确认所用引擎已正确配置（选「Chrome 内置离线翻译」无需 Key）
 2. 若用 LLM / DeepL，检查 Key 是否有效、额度是否充足
 3. 检查网络连接
-4. 在 Service Worker 控制台查看报错：`chrome://extensions` → 智译 → "服务工作进程"
+4. 在 Service Worker 控制台查看报错：`chrome://extensions` → 拾词 → "服务工作进程"
 
 ### 问题：某些网站不工作
 
@@ -162,7 +162,7 @@ convert icon.svg -resize 128x128 icon128.png
 如果遇到其他问题：
 
 1. 查看 [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
-2. 提交 [GitHub Issue](https://github.com/your-username/wdc-extension/issues)
+2. 提交 [GitHub Issue](https://github.com/rossroma/word-wise/issues)
 
 ## 🔄 更新插件
 
@@ -171,7 +171,7 @@ Chrome会自动更新插件，无需手动操作。
 
 ### 开发者模式安装的版本
 1. 拉取最新代码：`git pull origin main`
-2. 在 `chrome://extensions/` 页面点击智译插件的"重新加载"图标
+2. 在 `chrome://extensions/` 页面点击拾词插件的"重新加载"图标
 3. 或者点击"更新"按钮
 
 ## 🗑 卸载插件
@@ -179,7 +179,7 @@ Chrome会自动更新插件，无需手动操作。
 如需卸载：
 
 1. 打开 `chrome://extensions/`
-2. 找到"智译 - Smart Translation"
+2. 找到"拾词 - Wordwise"
 3. 点击"移除"按钮
 4. 确认卸载
 

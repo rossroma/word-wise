@@ -1,6 +1,6 @@
 # 快速开始指南
 
-本指南将帮助您在5分钟内快速上手"智译"浏览器插件。
+本指南将帮助您在5分钟内快速上手“拾词”（Wordwise）浏览器插件。
 
 ## 🚀 三步开始
 
@@ -12,7 +12,7 @@
 2. 开启右上角的"**开发者模式**"开关
 3. 点击"**加载已解压的扩展程序**"
 4. 选择本项目文件夹
-5. 看到智译图标出现在浏览器右上角 ✅
+5. 看到拾词图标出现在浏览器右上角 ✅
 
 ### 步骤2: 选择翻译引擎（可选）
 
@@ -68,7 +68,7 @@
 
 **场景：** 需要临时查看原文
 
-1. 点击浏览器右上角的智译图标
+1. 点击浏览器右上角的拾词图标
 2. 点击开关按钮即可快速关闭/开启翻译
 
 ## 📊 推荐配置
@@ -177,8 +177,8 @@ A:
 
 - 📖 详细文档：查看 [README.md](README.md)
 - 🔧 安装问题：查看 [INSTALL.md](INSTALL.md)
-- 🐛 报告问题：[GitHub Issues](https://github.com/your-username/wdc-extension/issues)
-- 💬 讨论交流：[GitHub Discussions](https://github.com/your-username/wdc-extension/discussions)
+- 🐛 报告问题：[GitHub Issues](https://github.com/rossroma/word-wise/issues)
+- 💬 讨论交流：[GitHub Discussions](https://github.com/rossroma/word-wise/discussions)
 
 ---
 
