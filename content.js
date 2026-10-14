@@ -716,6 +716,19 @@ function getTextNodes(element) {
   return textNodes;
 }
 
+// 只过滤译文为原词或简单复数/单数形式的情况；其它英文译文可能有意义。
+function isUsefulTranslation(word, translation) {
+  if (typeof translation !== 'string' || !translation.trim()) return false;
+  const source = word.trim().toLowerCase();
+  const result = translation.trim().replace(/^[\s"'“”‘’()[\]{}。，.!?！？:：;；]+|[\s"'“”‘’()[\]{}。，.!?！？:：;；]+$/g, '').toLowerCase();
+  if (source === result) return false;
+  if (!/^[a-z]+$/.test(source) || !/^[a-z]+$/.test(result)) return true;
+  const isPlural = (singular, plural) =>
+    plural === `${singular}s` || plural === `${singular}es` ||
+    (singular.endsWith('y') && plural === `${singular.slice(0, -1)}ies`);
+  return !isPlural(source, result) && !isPlural(result, source);
+}
+
 // 注入翻译结果到DOM
 function injectTranslations(translations) {
   debugLog('🔍 [调试] 开始注入翻译，翻译词汇:', Object.keys(translations));
@@ -774,6 +787,7 @@ function injectTranslations(translations) {
     // 为每个疑难词汇查找匹配位置
     Object.keys(translations).forEach(word => {
       const translation = translations[word];
+      if (!isUsefulTranslation(word, translation)) return;
       const regex = new RegExp(`\\b(${word})\\b`, 'gi');
       let match;
       while ((match = regex.exec(text)) !== null) {
