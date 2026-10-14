@@ -9,198 +9,88 @@
 <body>
   <div class="options-container">
     <header class="header">
-      <h1>智译设置</h1>
-      <p class="subtitle">配置您的翻译偏好</p>
-    </header>
-    
-    <main class="main-content">
-      <section class="section">
-        <h2 class="section-title">
-          <span class="section-icon">🔌</span>
-          翻译服务
-        </h2>
-
-        <div class="form-group">
-          <label for="provider">翻译引擎</label>
-          <select id="provider" class="select-field">
-            <option value="auto">自动（质量优先：LLM &gt; DeepL &gt; Chrome）</option>
-            <option value="chrome">Chrome 内置离线翻译（免费）</option>
-            <option value="deepl">DeepL（免费额度）</option>
-            <option value="openai">LLM（OpenAI 兼容）</option>
-          </select>
-          <p class="help-text" id="providerHelp">自动模式优先使用浏览器内置离线翻译，免费且数据不出本机。</p>
-        </div>
-
-        <div id="group-openai" hidden>
-        
-        <div class="form-group">
-          <label for="apiKey">API Key</label>
-          <input 
-            type="password" 
-            id="apiKey" 
-            class="input-field" 
-            placeholder="请输入您的API密钥"
-          >
-          <p class="help-text">
-            您的API Key仅存储在本地，不会上传到任何服务器。
-            <a href="https://platform.openai.com/api-keys" target="_blank">如何获取API Key?</a>
-          </p>
-        </div>
-        
-        <div class="form-group">
-          <label for="modelName">模型名称（可选）</label>
-          <input 
-            type="text" 
-            id="modelName" 
-            class="input-field" 
-            placeholder="例如: gpt-3.5-turbo, gpt-4-turbo"
-          >
-          <p class="help-text">留空则使用默认模型 gpt-3.5-turbo</p>
-        </div>
-        
-        <div class="form-group">
-          <label for="baseUrl">API基地址（可选）</label>
-          <input 
-            type="text" 
-            id="baseUrl" 
-            class="input-field" 
-            placeholder="例如: https://api.openai.com/v1"
-          >
-          <p class="help-text">用于配置代理或第三方服务</p>
-        </div>
-        </div>
-
-        <div id="group-deepl" hidden>
-          <div class="form-group">
-            <label for="deeplApiKey">DeepL API Key</label>
-            <input
-              type="password"
-              id="deeplApiKey"
-              class="input-field"
-              placeholder="形如 xxxx:fx（Free 版）"
-            >
-            <p class="help-text">
-              Free 版每月 50 万字符免费。
-              <a href="https://www.deepl.com/pro-api" target="_blank">获取 Key?</a>
-            </p>
-          </div>
-        </div>
-
-        <div id="group-chrome" hidden>
-          <p class="help-text">
-            使用 Chrome 内置离线翻译：完全免费、无需密钥、数据不出本机。
-            需要 Chrome 138+，首次使用会下载语言包。
-          </p>
-        </div>
-      </section>
-      
-      <section class="section">
-        <h2 class="section-title">
-          <span class="section-icon">🎯</span>
-          翻译设置
-        </h2>
-
-        <div class="form-group">
-          <label class="switch-label" for="autoTranslate">
-            <input type="checkbox" id="autoTranslate">
-            <span>检测到英文网页时自动翻译</span>
-          </label>
-          <p class="help-text">
-            开启：打开英文网页即自动翻译。关闭：不自动翻译，改为在页面右侧显示一个小图标，点击后再翻译。
-          </p>
-        </div>
-        
-        <div class="form-group">
-          <label for="targetLanguage">目标翻译语言</label>
-          <select id="targetLanguage" class="select-field">
-            <option value="zh-CN">简体中文</option>
-            <option value="zh-TW">繁體中文</option>
-            <option value="ja">日本語</option>
-            <option value="ko">한국어</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label for="difficultyLevel">
-            你的英语水平
-            <span class="level-value" id="levelDisplay">B2</span>
-          </label>
-          <div class="slider-container">
-            <input 
-              type="range" 
-              id="difficultyLevel" 
-              class="range-slider" 
-              min="2" 
-              max="6" 
-              value="4"
-              step="1"
-            >
-            <div class="slider-labels">
-              <span>A2<br><small>初级</small></span>
-              <span>B2<br><small>中高级</small></span>
-              <span>C2<br><small>精通</small></span>
-            </div>
-          </div>
-          <p class="help-text">
-            根据你的英语水平，智能翻译对应难度的词汇。A2翻译最多，C2仅翻译专业术语
-          </p>
-        </div>
-      </section>
-      
-      <section class="section">
-        <h2 class="section-title">
-          <span class="section-icon">📋</span>
-          网站管理
-        </h2>
-        
-        <div class="tabs">
-          <button class="tab-btn active" data-tab="whitelist">白名单</button>
-          <button class="tab-btn" data-tab="blacklist">黑名单</button>
-        </div>
-        
-        <div class="tab-content active" id="whitelist-content">
-          <p class="help-text">在这些网站上自动开启翻译</p>
-          <div class="list-input-group">
-            <input 
-              type="text" 
-              id="whitelistInput" 
-              class="input-field" 
-              placeholder="输入网站域名，例如: wikipedia.org"
-            >
-            <button id="addWhitelist" class="btn-add">添加</button>
-          </div>
-          <ul class="domain-list" id="whitelistDomains"></ul>
-        </div>
-        
-        <div class="tab-content" id="blacklist-content">
-          <p class="help-text">在这些网站上永不开启翻译</p>
-          <div class="list-input-group">
-            <input 
-              type="text" 
-              id="blacklistInput" 
-              class="input-field" 
-              placeholder="输入网站域名，例如: example.com"
-            >
-            <button id="addBlacklist" class="btn-add">添加</button>
-          </div>
-          <ul class="domain-list" id="blacklistDomains"></ul>
-        </div>
-      </section>
-      
-      <div class="action-buttons">
-        <button id="saveBtn" class="btn-primary">保存设置</button>
-        <button id="resetBtn" class="btn-secondary">恢复默认</button>
-        <button id="clearCacheBtn" class="btn-secondary">清除翻译缓存</button>
+      <div class="brand"><img src="icons/icon48.png" width="32" height="32" alt=""><span>智译 <span class="brand-divider">/</span> 偏好设置</span></div>
+      <div class="header-copy">
+        <p class="eyebrow">阅读方式，由你决定</p>
+        <h1>把注意力留给阅读。</h1>
+        <p class="subtitle">调整翻译的时机与力度，让每一篇英文内容读起来更顺畅。</p>
       </div>
-      
-      <div id="saveMessage" class="save-message"></div>
+    </header>
+
+    <main class="main-content">
+      <section class="section" aria-labelledby="readingTitle">
+        <div class="section-heading"><span class="section-number">01</span><div><h2 id="readingTitle">阅读偏好</h2><p>从你最常用的设置开始。</p></div></div>
+        <div class="section-body">
+          <div class="form-group switch-row">
+            <div><label for="autoTranslate">自动翻译英文网页</label><p class="help-text">关闭后，可在网页右侧点击小图标手动开始翻译。</p></div>
+            <label class="switch" for="autoTranslate"><input type="checkbox" id="autoTranslate" role="switch"><span class="switch-track" aria-hidden="true"></span></label>
+          </div>
+          <div class="form-group">
+            <label for="difficultyLevel">你的英语水平 <span class="level-value" id="levelDisplay">B2</span></label>
+            <div class="slider-container">
+              <input type="range" id="difficultyLevel" class="range-slider" min="2" max="6" value="4" step="1" aria-describedby="levelHelp">
+              <div class="slider-labels" aria-hidden="true"><span>A2</span><span>B1</span><span>B2</span><span>C1</span><span>C2</span></div>
+            </div>
+            <p class="help-text" id="levelHelp">B2 · 平衡阅读与学习，翻译较难的词汇。</p>
+          </div>
+          <div class="form-group">
+            <label for="targetLanguage">译文语言</label>
+            <select id="targetLanguage" class="select-field"><option value="zh-CN">简体中文</option><option value="zh-TW">繁體中文</option><option value="ja">日本語</option><option value="ko">한국어</option></select>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="serviceTitle">
+        <div class="section-heading"><span class="section-number">02</span><div><h2 id="serviceTitle">翻译服务</h2><p>选择适合自己的质量、速度与隐私方式。</p></div></div>
+        <div class="section-body">
+          <div class="form-group">
+            <label for="provider">翻译引擎</label>
+            <select id="provider" class="select-field" aria-describedby="providerHelp">
+              <option value="auto">自动选择 · LLM → DeepL → Chrome</option>
+              <option value="chrome">Chrome 内置离线翻译 · 免费</option>
+              <option value="deepl">DeepL · 免费额度</option>
+              <option value="openai">LLM · OpenAI 兼容</option>
+            </select>
+            <p class="help-text" id="providerHelp">自动模式按翻译质量优先选择；未配置密钥时回退到 Chrome 内置翻译。</p>
+          </div>
+          <div id="group-chrome" class="provider-note" hidden>Chrome 内置翻译无需密钥，数据不出本机。需要 Chrome 138+，首次使用会下载语言包。</div>
+          <button type="button" id="providerDetailsToggle" class="details-toggle" aria-controls="providerDetails" aria-expanded="false" hidden>配置可选的翻译服务 <span aria-hidden="true">⌄</span></button>
+          <div class="provider-details" id="providerDetails" hidden>
+            <p class="details-heading">服务配置 <span>仅在使用对应服务时需要</span></p>
+            <div id="group-openai" hidden>
+              <div class="form-group"><label for="apiKey">LLM API Key</label><input type="password" id="apiKey" class="input-field" autocomplete="off" placeholder="填写你的 API 密钥"><p class="help-text">密钥仅保存在浏览器的同步存储中。<a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">获取 API Key ↗</a></p></div>
+              <div class="form-group"><label for="modelName">模型名称 <span class="optional">可选</span></label><input type="text" id="modelName" class="input-field" placeholder="例如 gpt-3.5-turbo"><p class="help-text">留空使用 gpt-3.5-turbo</p></div>
+              <div class="form-group"><label for="baseUrl">API 基地址 <span class="optional">可选</span></label><input type="text" id="baseUrl" class="input-field" placeholder="https://api.openai.com/v1"><p class="help-text">仅在使用代理或兼容服务时修改。</p></div>
+            </div>
+            <div id="group-deepl" hidden><div class="form-group"><label for="deeplApiKey">DeepL API Key</label><input type="password" id="deeplApiKey" class="input-field" autocomplete="off" placeholder="形如 xxxx:fx（Free 版）"><p class="help-text">Free 版每月提供 50 万字符额度。<a href="https://www.deepl.com/pro-api" target="_blank" rel="noopener noreferrer">获取 API Key ↗</a></p></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="sitesTitle">
+        <div class="section-heading"><span class="section-number">03</span><div><h2 id="sitesTitle">网站规则</h2><p>为常访问的网站单独决定翻译行为。</p></div></div>
+        <div class="section-body">
+          <div class="tabs" role="tablist" aria-label="网站规则"><button type="button" class="tab-btn active" id="whitelist-tab" role="tab" aria-controls="whitelist-content" aria-selected="true" data-tab="whitelist">白名单</button><button type="button" class="tab-btn" id="blacklist-tab" role="tab" aria-controls="blacklist-content" aria-selected="false" tabindex="-1" data-tab="blacklist">黑名单</button></div>
+          <div class="tab-content active" id="whitelist-content" role="tabpanel" aria-labelledby="whitelist-tab"><p class="help-text tab-description">在这些网站上自动开启翻译</p><div class="list-input-group"><input type="text" id="whitelistInput" class="input-field" aria-label="添加白名单网站域名" placeholder="例如 wikipedia.org"><button type="button" id="addWhitelist" class="btn-add">添加网站</button></div><ul class="domain-list" id="whitelistDomains"></ul></div>
+          <div class="tab-content" id="blacklist-content" role="tabpanel" aria-labelledby="blacklist-tab" hidden><p class="help-text tab-description">在这些网站上永不开启翻译</p><div class="list-input-group"><input type="text" id="blacklistInput" class="input-field" aria-label="添加黑名单网站域名" placeholder="例如 example.com"><button type="button" id="addBlacklist" class="btn-add">添加网站</button></div><ul class="domain-list" id="blacklistDomains"></ul></div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="advancedTitle">
+        <div class="section-heading"><span class="section-number">04</span><div><h2 id="advancedTitle">高级设置</h2><p>需要排查问题时再开启。</p></div></div>
+        <div class="section-body">
+          <div class="form-group switch-row">
+            <div><label for="debugLogging">调试日志</label><p class="help-text">开启后，在网页和扩展后台的控制台输出翻译过程与性能信息。错误日志始终保留。</p></div>
+            <label class="switch" for="debugLogging"><input type="checkbox" id="debugLogging" role="switch"><span class="switch-track" aria-hidden="true"></span></label>
+          </div>
+        </div>
+      </section>
+
+      <div class="action-buttons"><button type="button" id="saveBtn" class="btn-primary">保存设置</button><div class="secondary-actions"><button type="button" id="resetBtn" class="btn-text">恢复默认</button><button type="button" id="clearCacheBtn" class="btn-text">清除翻译缓存</button></div></div>
+      <div id="saveMessage" class="save-message" role="status" aria-live="polite"></div>
     </main>
-    
-    <footer class="footer">
-      <p>智译 v1.0.0 | 让英文阅读更轻松</p>
-    </footer>
+    <footer class="footer">智译 <span>·</span> 让英文阅读更轻松 <span>·</span> <a href="https://github.com/your-repo/wdc-extension/issues" target="_blank" rel="noopener noreferrer">反馈问题 ↗</a></footer>
   </div>
-  
   <script src="options.js"></script>
 </body>
 </html>

@@ -23,8 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const groupOpenai = document.getElementById('group-openai');
   const groupDeepl = document.getElementById('group-deepl');
   const groupChrome = document.getElementById('group-chrome');
+  const providerDetails = document.getElementById('providerDetails');
+  const providerDetailsToggle = document.getElementById('providerDetailsToggle');
+  const levelHelp = document.getElementById('levelHelp');
   const deeplApiKeyInput = document.getElementById('deeplApiKey');
   const autoTranslateInput = document.getElementById('autoTranslate');
+  const debugLoggingInput = document.getElementById('debugLogging');
   
   // 标签切换
   const tabBtns = document.querySelectorAll('.tab-btn');
@@ -34,11 +38,24 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       const targetTab = btn.dataset.tab;
       
-      tabBtns.forEach(b => b.classList.remove('active'));
-      tabContents.forEach(c => c.classList.remove('active'));
-      
-      btn.classList.add('active');
-      document.getElementById(`${targetTab}-content`).classList.add('active');
+      tabBtns.forEach(b => {
+        const selected = b === btn;
+        b.classList.toggle('active', selected);
+        b.setAttribute('aria-selected', String(selected));
+        b.tabIndex = selected ? 0 : -1;
+      });
+      tabContents.forEach(c => {
+        const selected = c.id === `${targetTab}-content`;
+        c.classList.toggle('active', selected);
+        c.hidden = !selected;
+      });
+    });
+    btn.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      const next = tabBtns[(Array.from(tabBtns).indexOf(btn) + (e.key === 'ArrowRight' ? 1 : tabBtns.length - 1)) % tabBtns.length];
+      next.focus();
+      next.click();
     });
   });
   
@@ -50,11 +67,25 @@ document.addEventListener('DOMContentLoaded', () => {
     5: 'C1',
     6: 'C2'
   };
+  const levelDescriptions = {
+    2: 'A2 · 翻译更多词汇，适合刚开始读英文内容。',
+    3: 'B1 · 保留熟悉的表达，翻译较生疏的词汇。',
+    4: 'B2 · 平衡阅读与学习，翻译较难的词汇。',
+    5: 'C1 · 只翻译少见和复杂的词汇。',
+    6: 'C2 · 仅翻译最难的专业术语。'
+  };
+
+  function updateLevel(level) {
+    levelDisplay.textContent = cefrLevels[level] || level;
+    levelHelp.textContent = levelDescriptions[level] || '';
+    difficultyLevelSlider.style.setProperty('--slider-progress', `${(level - 2) * 25}%`);
+    difficultyLevelSlider.setAttribute('aria-valuetext', cefrLevels[level] || String(level));
+  }
   
   // 难度等级滑块
   difficultyLevelSlider.addEventListener('input', (e) => {
     const level = parseInt(e.target.value);
-    levelDisplay.textContent = cefrLevels[level] || level;
+    updateLevel(level);
   });
 
   // 翻译引擎说明与条件字段
@@ -70,7 +101,15 @@ document.addEventListener('DOMContentLoaded', () => {
     groupOpenai.hidden = !(provider === 'openai' || provider === 'auto');
     groupDeepl.hidden = !(provider === 'deepl' || provider === 'auto');
     groupChrome.hidden = !(provider === 'chrome' || provider === 'auto');
+    providerDetailsToggle.hidden = provider !== 'auto';
+    providerDetails.hidden = provider === 'chrome' || (provider === 'auto' && providerDetailsToggle.getAttribute('aria-expanded') !== 'true');
   }
+
+  providerDetailsToggle.addEventListener('click', () => {
+    const expanded = providerDetailsToggle.getAttribute('aria-expanded') !== 'true';
+    providerDetailsToggle.setAttribute('aria-expanded', String(expanded));
+    providerDetails.hidden = !expanded;
+  });
 
   providerSelect.addEventListener('change', (e) => updateProviderUI(e.target.value));
   
@@ -78,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const defaultConfig = {
     provider: 'auto',
     autoTranslate: false,
+    debugLogging: false,
     apiKey: '',
     modelName: 'gpt-3.5-turbo',
     baseUrl: 'https://api.openai.com/v1',
@@ -101,13 +141,14 @@ document.addEventListener('DOMContentLoaded', () => {
       targetLanguageSelect.value = config.targetLanguage || 'zh-CN';
       const level = config.difficultyLevel || 4;
       difficultyLevelSlider.value = level;
-      levelDisplay.textContent = cefrLevels[level] || level;
+      updateLevel(level);
 
       const provider = config.provider || 'auto';
       providerSelect.value = provider;
       updateProviderUI(provider);
       deeplApiKeyInput.value = config.deeplApiKey || '';
       autoTranslateInput.checked = !!config.autoTranslate;
+      debugLoggingInput.checked = !!config.debugLogging;
 
       renderDomainList(whitelistDomains, config.whitelist || [], 'whitelist');
       renderDomainList(blacklistDomains, config.blacklist || [], 'blacklist');
@@ -119,16 +160,20 @@ document.addEventListener('DOMContentLoaded', () => {
     container.innerHTML = '';
     
     if (domains.length === 0) {
-      container.innerHTML = '<li style="text-align: center; color: #999;">暂无域名</li>';
+      container.innerHTML = '<li class="empty-state">还没有添加网站</li>';
       return;
     }
     
     domains.forEach(domain => {
       const li = document.createElement('li');
-      li.innerHTML = `
-        <span>${domain}</span>
-        <button onclick="removeDomain('${type}', '${domain}')">×</button>
-      `;
+      const name = document.createElement('span');
+      name.textContent = domain;
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.textContent = '移除';
+      remove.setAttribute('aria-label', `从${type === 'whitelist' ? '白名单' : '黑名单'}移除 ${domain}`);
+      remove.addEventListener('click', () => removeDomain(type, domain));
+      li.append(name, remove);
       container.appendChild(li);
     });
   }
@@ -172,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   // 移除域名（全局函数）
-  window.removeDomain = function(type, domain) {
+  function removeDomain(type, domain) {
     chrome.storage.sync.get(['config'], (result) => {
       const config = result.config || defaultConfig;
       
@@ -186,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       chrome.storage.sync.set({ config });
     });
-  };
+  }
   
   // 保存设置
   saveBtn.addEventListener('click', () => {
@@ -205,6 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       config.provider = provider;
       config.autoTranslate = autoTranslateInput.checked;
+      config.debugLogging = debugLoggingInput.checked;
       config.apiKey = apiKeyInput.value.trim();
       config.modelName = modelNameInput.value.trim() || 'gpt-3.5-turbo';
       config.baseUrl = baseUrlInput.value.trim() || 'https://api.openai.com/v1';
@@ -243,12 +289,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   // 显示消息
+  let messageTimer;
   function showMessage(message, type) {
+    clearTimeout(messageTimer);
     saveMessage.textContent = message;
     saveMessage.className = `save-message ${type}`;
     
-    setTimeout(() => {
-      saveMessage.style.display = 'none';
+    messageTimer = setTimeout(() => {
+      saveMessage.className = 'save-message';
+      saveMessage.textContent = '';
     }, 3000);
   }
   
