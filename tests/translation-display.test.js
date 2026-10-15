@@ -45,3 +45,23 @@ for (const [word, translation] of [
 }
 
 console.log('Translation display filter: all cases passed');
+
+const collector = [];
+const node = { textContent: 'int32_t 32-bit 64-bit UTF-8 PDP-11 _int int_private curiouser-version2 curiouser-phrase curiouser’s int, curiouser', parentElement: {} };
+const parent = { replaceChild(fragment) { collector.push(fragment); } };
+node.parentNode = parent;
+context.NodeFilter = { SHOW_TEXT: 4, FILTER_ACCEPT: 1, FILTER_REJECT: 2 };
+context.document = {
+  body: {},
+  documentElement: { lang: 'zh-CN' },
+  createTreeWalker() { let read = false; return { nextNode() { if (read) return null; read = true; return node; } }; },
+  createDocumentFragment() { return { children: [], appendChild(child) { this.children.push(child); } }; },
+  createTextNode(text) { return { textContent: text }; },
+  createElement() { return { children: [], appendChild(child) { this.children.push(child); }, set textContent(value) { this.children.push({ textContent: value }); } }; },
+  querySelectorAll() { return []; }
+};
+vm.runInContext('injectTranslations({ int: "integer", bit: "位", utf: "编码", pdp: "计算机", curiouser: "更好奇" })', context);
+assert.strictEqual(collector.length, 1);
+const wrapped = collector[0].children.filter(child => child.className === 'zhiyi-word');
+assert.deepStrictEqual(wrapped.map(span => span.children[0].textContent), ['int', 'curiouser']);
+console.log('Translation injection: code identifiers left untouched');

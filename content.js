@@ -449,10 +449,9 @@ async function startTranslation() {
     // 2. 使用本地 wordfreq(Zipf)判定器识别疑难词汇
     perfLogger.start('检查依赖', '翻译处理');
 
-    // 阈值:优先使用 config.zipfThreshold;否则由 difficultyLevel 兼容映射
-    const zipfThreshold = (typeof config?.zipfThreshold === 'number')
-      ? config.zipfThreshold
-      : (typeof zhiyiThresholdForLevel === 'function' ? zhiyiThresholdForLevel(config?.difficultyLevel || 4) : 4.1);
+    // 设置页的 CEFR 档位是阈值的唯一来源；旧版 zipfThreshold 不再覆盖用户选择。
+    const zipfThreshold = typeof zhiyiThresholdForLevel === 'function'
+      ? zhiyiThresholdForLevel(config?.difficultyLevel || 4) : 4.27;
 
     // 检查依赖是否加载
     if (typeof createWordDifficultyScorer === 'undefined' || typeof window.__EN_ZIPF === 'undefined') {
@@ -634,7 +633,9 @@ function splitTextIntoChunks(text, chunkSize = 2000) {
   const chunks = [];
   
   // 按句子分割（以句号、问号、感叹号为边界）
-  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
+  const remainder = text.slice(sentences.join('').length);
+  if (remainder) sentences.push(remainder);
   
   let currentChunk = '';
   
@@ -793,6 +794,13 @@ function injectTranslations(translations) {
       while ((match = regex.exec(text)) !== null) {
         const start = match.index;
         const end = start + match[0].length;
+        let left = start;
+        let right = end;
+        while (left > 0 && /[A-Za-z0-9_-]/.test(text[left - 1])) left--;
+        while (right < text.length && /[A-Za-z0-9_-]/.test(text[right])) right++;
+        if (/[0-9_]/.test(text.slice(left, right)) ||
+            (start > 0 && /[A-Za-z'’-]/.test(text[start - 1])) ||
+            (end < text.length && /[A-Za-z'’-]/.test(text[end]))) continue;
         const isOverlapping = replacements.some(r =>
           (start >= r.start && start < r.end) ||
           (end > r.start && end <= r.end)
