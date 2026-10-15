@@ -28,7 +28,7 @@
 在设置页修改选项后，点击「保存设置」。
 
 - **自动翻译英文网页**：开启后，在检测到英文网页时自动翻译；关闭后可使用网页右侧按钮手动开始。
-- **英语水平**：在 A2、B1、B2、C1、C2 间选择；档位越高，通常标注的词越少。默认 B2。
+- **英语水平**：在 A1、A2、B1、B2、C1、C2 间选择；档位越高，通常标注的词越少。默认 B2。实际标注数量会随文章内容变化。
 - **译文语言**：可选简体中文、繁體中文、日本語和 한국어；不同引擎支持情况可能不同，LLM 引擎目前的提示词以中文译文为主。
 - **翻译引擎**：默认自动选择，优先使用已配置的 LLM，其次 DeepL，最后回退到 Chrome 内置翻译。也可以指定单个引擎。
 
@@ -56,3 +56,9 @@
 仍无法解决？请在 [GitHub Issues](https://github.com/rossroma/word-wise/issues) 反馈，附上 Chrome 版本、扩展版本、复现网页及操作步骤；提交截图或日志前请先移除 API Key 等敏感信息。
 
 本项目使用 [MIT 许可证](LICENSE)。
+
+### 本地语料基准
+
+要对比不同阅读难度在多类样本中的匹配量，可运行 `npm run analyze:corpus`；完整候选词和未选中词可用 `npm run analyze:corpus -- --json` 查看。语料快照与来源见 `tests/corpus/long-fixtures.json` 和 `tests/corpus/sources.json`；运行 `python3 tools/fetch_corpus.py` 可刷新公版/政府语料。样本包括三种不同风格小说、一篇随笔、一篇 Python 软件工程文章、一篇医学报告，以及新闻与健康科普。版权受限的网页只保留来源 URL，不随项目分发正文。文学与软件样本为开头约 24,000 字符；新闻和科普较短，不能代表整个体裁。
+
+**完整未收录词清单**：运行 `uv run --no-project --with wordfreq==3.1.1 python tools/classify_absent.py`（需安装 `uv`，仅分析工具依赖 wordfreq）。`tests/corpus/absent-words.csv` 逐文章列出每一个整词未收录项、原始写法、出现次数、上游 Zipf、筛选器 Zipf、分类和被哪些级别选中；`tests/corpus/absent-vocabulary.csv` 是跨文章去重的总清单，`tests/corpus/absent-summary.json` 是分类汇总。分类是启发式推断，不等于“应该翻译/过滤”的决策：`capitalized-surface-review` 只表示出现过首字母大写形式（包括句首、标题），**不能视为专名标签**。旧版 `tools/analyze_oov.py` 可选用于对照实际 OOV 的上游频率。“整词未收录”指本地裁剪词频表没有该词；“实际 OOV”指筛选器计算得到 Zipf=0，两者不等于完整 wordfreq 不收录。已选中、未选中及整词未收录占比以该样本去重词数为分母，出现次数占比以总词语出现次数为分母；每档 OOV% 以该档已选中的去重词数为分母。所有数字是翻译前候选数，不代表实际显示的译文。
