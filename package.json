@@ -5,7 +5,7 @@
   "main": "background.js",
   "scripts": {
     "build": "echo 'No build required for Manifest V3 extension'",
-    "lint": "eslint *.js",
+    "lint": "eslint . --ext .js --max-warnings 0",
     "format": "prettier --write '**/*.{js,json,html,css,md}'",
     "test": "node tests/site-rules.test.js && node tests/translation-display.test.js && node tests/word-difficulty.test.js && node tests/corpus-analysis.test.js",
     "analyze:corpus": "node tools/analyze_corpus.js",
