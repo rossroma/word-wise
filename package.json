@@ -7,7 +7,7 @@
     "build": "echo 'No build required for Manifest V3 extension'",
     "lint": "eslint *.js",
     "format": "prettier --write '**/*.{js,json,html,css,md}'",
-    "test": "node tests/translation-display.test.js && node tests/word-difficulty.test.js && node tests/corpus-analysis.test.js",
+    "test": "node tests/site-rules.test.js && node tests/translation-display.test.js && node tests/word-difficulty.test.js && node tests/corpus-analysis.test.js",
     "analyze:corpus": "node tools/analyze_corpus.js",
     "package": "zip -r wordwise-extension.zip . -x '*.git*' -x 'node_modules/*' -x '*.zip' -x 'package-lock.json'"
   },

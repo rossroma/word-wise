@@ -21,7 +21,9 @@ const context = vm.createContext({
   performance: { now: () => 0 },
   setTimeout: () => 0,
   console,
-  window: {}
+  window: { WordwiseSiteRules: { sitePolicy: () => 'manual' } },
+  WordwiseSiteRules: { sitePolicy: () => 'manual' },
+  location: { href: 'https://example.com/' }
 });
 
 // A non-English page lets the content script initialize without starting translation.

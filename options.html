@@ -71,8 +71,8 @@
         <div class="section-heading"><span class="section-number">03</span><div><h2 id="sitesTitle">网站规则</h2><p>为常访问的网站单独决定翻译行为。</p></div></div>
         <div class="section-body">
           <div class="tabs" role="tablist" aria-label="网站规则"><button type="button" class="tab-btn active" id="whitelist-tab" role="tab" aria-controls="whitelist-content" aria-selected="true" data-tab="whitelist">白名单</button><button type="button" class="tab-btn" id="blacklist-tab" role="tab" aria-controls="blacklist-content" aria-selected="false" tabindex="-1" data-tab="blacklist">黑名单</button></div>
-          <div class="tab-content active" id="whitelist-content" role="tabpanel" aria-labelledby="whitelist-tab"><p class="help-text tab-description">在这些网站上自动开启翻译</p><div class="list-input-group"><input type="text" id="whitelistInput" class="input-field" aria-label="添加白名单网站域名" placeholder="例如 wikipedia.org"><button type="button" id="addWhitelist" class="btn-add">添加网站</button></div><ul class="domain-list" id="whitelistDomains"></ul></div>
-          <div class="tab-content" id="blacklist-content" role="tabpanel" aria-labelledby="blacklist-tab" hidden><p class="help-text tab-description">在这些网站上永不开启翻译</p><div class="list-input-group"><input type="text" id="blacklistInput" class="input-field" aria-label="添加黑名单网站域名" placeholder="例如 example.com"><button type="button" id="addBlacklist" class="btn-add">添加网站</button></div><ul class="domain-list" id="blacklistDomains"></ul></div>
+          <div class="tab-content active" id="whitelist-content" role="tabpanel" aria-labelledby="whitelist-tab"><p class="help-text tab-description">在这些网站上自动开启翻译，优先于全局开关。裸域名包含子域名；支持 *，如 *.example.com。</p><div class="list-input-group"><input type="text" id="whitelistInput" class="input-field" aria-label="添加白名单网站域名" placeholder="例如 *.example.com"><button type="button" id="addWhitelist" class="btn-add">添加网站</button></div><ul class="domain-list" id="whitelistDomains"></ul></div>
+          <div class="tab-content" id="blacklist-content" role="tabpanel" aria-labelledby="blacklist-tab" hidden><p class="help-text tab-description">禁止在这些网站上开启翻译，优先于白名单和全局开关；支持 * 通配符。</p><div class="list-input-group"><input type="text" id="blacklistInput" class="input-field" aria-label="添加黑名单网站域名" placeholder="例如 *.example.com"><button type="button" id="addBlacklist" class="btn-add">添加网站</button></div><ul class="domain-list" id="blacklistDomains"></ul></div>
         </div>
       </section>
 
@@ -91,6 +91,7 @@
     </main>
     <footer class="footer">拾词 <span>·</span> 让英文阅读更轻松 <span>·</span> <a href="https://github.com/rossroma/word-wise/issues" target="_blank" rel="noopener noreferrer">反馈问题 ↗</a></footer>
   </div>
+  <script src="lib/site-rules.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

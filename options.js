@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 翻译引擎说明与条件字段
   const providerHelpText = {
-    auto: '自动模式按翻译质量优先选择：配置了 LLM 用 LLM，其次 DeepL，都没有时回退到 Chrome 内置离线翻译。',
+    auto: '按已有密钥选择引擎：LLM 优先，其次 DeepL；都未配置时使用 Chrome。请求失败不会自动切换引擎。',
     chrome: 'Chrome 内置离线翻译：完全免费、无需密钥。需要 Chrome 138+，首次使用会下载语言包。',
     deepl: 'DeepL：译文质量高，Free 版每月 50 万字符免费。',
     openai: 'LLM（OpenAI 兼容）：结合上下文选义更准，但会消耗你的 API 额度。'
@@ -182,7 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // 添加到白名单
   addWhitelistBtn.addEventListener('click', () => {
-    const domain = whitelistInput.value.trim();
+    const domain = WordwiseSiteRules.normalizeRule(whitelistInput.value);
+    if (!domain) { showMessage('请输入有效域名或 https://域名/路径* 规则；不能只填 *', 'error'); return; }
     if (domain) {
       chrome.storage.sync.get(['config'], (result) => {
         const config = result.config || defaultConfig;
@@ -201,7 +202,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // 添加到黑名单
   addBlacklistBtn.addEventListener('click', () => {
-    const domain = blacklistInput.value.trim();
+    const domain = WordwiseSiteRules.normalizeRule(blacklistInput.value);
+    if (!domain) { showMessage('请输入有效域名或 https://域名/路径* 规则；不能只填 *', 'error'); return; }
     if (domain) {
       chrome.storage.sync.get(['config'], (result) => {
         const config = result.config || defaultConfig;
@@ -262,9 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       chrome.storage.sync.set({ config }, () => {
         showMessage('设置已保存！', 'success');
-
-        // 通知background script更新配置
-        chrome.runtime.sendMessage({ action: 'configUpdated', config });
       });
     });
   });

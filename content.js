@@ -3,6 +3,10 @@
 let isActivated = false;
 let config = null;
 let debugEnabled = false;
+let translationRun = 0;
+let removePromptResize = null;
+let activationChanged = false;
+let initialized = false;
 const debugLog = (...args) => { if (debugEnabled) console.log(...args); };
 const debugWarn = (...args) => { if (debugEnabled) console.warn(...args); };
 const debugTable = (...args) => { if (debugEnabled) console.table(...args); };
@@ -11,10 +15,27 @@ const debugGroupEnd = () => { if (debugEnabled) console.groupEnd(); };
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'sync' && changes.config) {
+    const previousConfig = config;
     config = changes.config.newValue || {};
     debugEnabled = !!config.debugLogging;
     perfLogger.enabled = debugEnabled;
     if (!debugEnabled) perfLogger.clear();
+    const wasBlocked = WordwiseSiteRules.sitePolicy(location.href, previousConfig || {}) === 'blocked';
+    const isBlocked = WordwiseSiteRules.sitePolicy(location.href, config) === 'blocked';
+    if (isBlocked && !wasBlocked && initialized) {
+      activationChanged = true;
+      translationRun++;
+      isActivated = false;
+      document.querySelectorAll('.zhiyi-word').forEach(el => {
+        el.querySelector('.zhiyi-translation')?.remove();
+        el.replaceWith(...el.childNodes);
+      });
+      document.getElementById('zhiyi-activation-icon')?.remove();
+      if (removePromptResize) removePromptResize();
+      sendMessageSafely({ action: 'setActivation', activated: false }).catch(err => console.error('清除黑名单网站激活状态失败:', err));
+    } else if (initialized && wasBlocked && !isBlocked && !isActivated && detectEnglishPage()) {
+      showActivationPrompt();
+    }
   }
 });
 
@@ -152,7 +173,6 @@ window.zhiyiPerf = {
 // 在控制台暴露调试功能
 window.zhiyiDebug = {
   // 最近一次翻译使用的引擎（页面加载后由 startTranslation 写入）
-  lastProvider: null,
   // 检查页面中包含某个词的所有元素
   findWord: (word) => {
     const results = [];
@@ -257,13 +277,13 @@ async function sendMessageSafely(message, retries = 3, timeoutMs = 60000) {
   // 检查是否已激活
     perfLogger.start('检查激活状态', '系统启动');
     const response = await sendMessageSafely({ action: 'checkActivation' });
-    isActivated = response?.activated || false;
+    if (!activationChanged) isActivated = response?.activated || false;
     perfLogger.end('检查激活状态', '系统启动');
   
   // 获取配置
     perfLogger.start('获取配置', '系统启动');
     const configResponse = await sendMessageSafely({ action: 'getConfig' });
-    config = configResponse?.config || {};
+    if (!config) config = configResponse?.config || {};
     debugEnabled = !!config.debugLogging;
     perfLogger.enabled = debugEnabled;
     perfLogger.end('获取配置', '系统启动');
@@ -273,18 +293,30 @@ async function sendMessageSafely(message, retries = 3, timeoutMs = 60000) {
     const isEnglish = detectEnglishPage();
     perfLogger.end('检测页面语言', '系统启动', { isEnglish });
     
-    if (isEnglish) {
+    const policy = WordwiseSiteRules.sitePolicy(location.href, config);
+    if (policy === 'blocked') {
+      isActivated = false;
+      await sendMessageSafely({ action: 'setActivation', activated: false }).catch(err => console.error('清除黑名单网站激活状态失败:', err));
+      return;
+    }
+    if (isEnglish && !activationChanged) {
     // 通知background script
       await sendMessageSafely({
-      action: 'detectLanguage',
-      data: { isEnglish: true }
-      }).catch(err => debugWarn('语言检测通知失败:', err));
-    
-    // autoTranslate 开启,或本标签页此前已激活 → 直接翻译;否则显示小图标
-    if (config?.autoTranslate || isActivated) {
+        action: 'detectLanguage',
+        data: { isEnglish: true }
+      }).catch(err => console.error('语言检测通知失败:', err));
+      if (activationChanged) return;
+    // 黑名单 > 白名单 > 全局自动翻译；黑名单也禁止恢复此前的激活状态。
+    initialized = true;
+    if (policy === 'automatic' || isActivated) {
       if (!isActivated) {
+        const activation = await sendMessageSafely({ action: 'setActivation', activated: true });
+        if (!activation?.success) throw new Error(activation?.error || '保存激活状态失败');
+        if (activationChanged || WordwiseSiteRules.sitePolicy(location.href, config) === 'blocked') {
+          await sendMessageSafely({ action: 'setActivation', activated: false });
+          return;
+        }
         isActivated = true;
-        sendMessageSafely({ action: 'setActivation', activated: true }).catch(err => debugWarn('设置激活状态失败:', err));
       }
       startTranslation();
     } else {
@@ -339,6 +371,7 @@ function detectEnglishPage() {
 
 // 显示小巧的激活图标(点击即开始翻译)
 function showActivationPrompt() {
+  if (WordwiseSiteRules.sitePolicy(location.href, config) === 'blocked') return;
   // 避免重复显示
   if (document.getElementById('zhiyi-activation-icon')) return;
 
@@ -396,6 +429,7 @@ function showActivationPrompt() {
   icon.addEventListener('pointercancel', finishDrag);
   const handleResize = () => positionIcon(icon.getBoundingClientRect().top);
   window.addEventListener('resize', handleResize);
+  removePromptResize = () => { window.removeEventListener('resize', handleResize); removePromptResize = null; };
   icon.addEventListener('keydown', event => {
     if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
     event.preventDefault();
@@ -409,14 +443,17 @@ function showActivationPrompt() {
       suppressClick = false;
       return;
     }
+    try {
+      const response = await sendMessageSafely({ action: 'setActivation', activated: true });
+      if (!response?.success) throw new Error(response?.error || '保存激活状态失败');
+    } catch (error) {
+      console.error('设置激活状态失败:', error);
+      showError(error.message);
+      return;
+    }
     isActivated = true;
     icon.remove();
-    window.removeEventListener('resize', handleResize);
-    try {
-      await sendMessageSafely({ action: 'setActivation', activated: true });
-    } catch (error) {
-      debugWarn('设置激活状态失败:', error);
-    }
+    removePromptResize();
     startTranslation();
   });
 
@@ -429,6 +466,7 @@ function showActivationPrompt() {
 
 // 开始翻译流程
 async function startTranslation() {
+  const run = ++translationRun;
   debugLog('🔍 [调试] ========== startTranslation 被调用 ==========');
   if (debugEnabled) debugLog('🔍 [调试] 调用栈:', new Error().stack);
   
@@ -550,7 +588,9 @@ async function startTranslation() {
     let totalTranslated = 0;
 
     for (let p = 0; p < pages.length; p++) {
+      if (run !== translationRun) break;
       const response = await sendMessageSafely({ action: 'translate', words: pages[p] });
+      if (run !== translationRun) break;
       if (!response?.success) {
         const errorMsg = response?.error || '翻译请求失败';
         console.error('翻译失败:', errorMsg);
@@ -866,28 +906,57 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   debugLog('🔍 [调试] 收到消息:', request);
   
   if (request.action === 'toggleTranslation') {
-    debugLog('🔍 [调试] toggleTranslation 消息，enabled:', request.enabled);
-    isActivated = request.enabled;
-    
-    if (isActivated) {
-      debugLog('🔍 [调试] 准备启动翻译...');
-      startTranslation();
-    } else {
-      debugLog('🔍 [调试] 移除所有翻译...');
-      // 去掉翻译、保留原词
-      const words = document.querySelectorAll('.zhiyi-word');
-      debugLog('🔍 [调试] 找到', words.length, '个需要还原的元素');
-      words.forEach(el => {
-        const trans = el.querySelector('.zhiyi-translation');
-        if (trans) trans.remove();
-        el.replaceWith(...el.childNodes);
-      });
-      // 兼容旧版本残留的外层包装
-      document.querySelectorAll('.zhiyi-translated').forEach(el => el.replaceWith(...el.childNodes));
+    const blocked = WordwiseSiteRules.sitePolicy(location.href, config) === 'blocked';
+    if (request.enabled && (blocked || !detectEnglishPage())) {
+      sendResponse({ success: false, error: blocked ? '此网站在黑名单中' : '当前不是英文页面' });
+      return;
     }
-    
-    sendResponse({ success: true });
+    if (request.enabled && isActivated) {
+      sendResponse({ success: true });
+      return;
+    }
+    if (!request.enabled && !isActivated) {
+      sendResponse({ success: true });
+      return;
+    }
+    debugLog('🔍 [调试] toggleTranslation 消息，enabled:', request.enabled);
+    activationChanged = true;
+    sendMessageSafely({ action: 'setActivation', activated: request.enabled })
+      .then(response => {
+        if (!response?.success) {
+          sendResponse({ success: false, error: response?.error || '保存激活状态失败' });
+          return;
+        }
+        if (request.enabled && WordwiseSiteRules.sitePolicy(location.href, config) === 'blocked') {
+          sendMessageSafely({ action: 'setActivation', activated: false }).catch(err => console.error('恢复黑名单网站激活状态失败:', err));
+          sendResponse({ success: false, error: '网站规则已更新，请重试' });
+          return;
+        }
+        isActivated = request.enabled;
+        if (isActivated) {
+          document.getElementById('zhiyi-activation-icon')?.remove();
+          if (removePromptResize) removePromptResize();
+          debugLog('🔍 [调试] 准备启动翻译...');
+          startTranslation();
+        } else {
+          translationRun++;
+          debugLog('🔍 [调试] 移除所有翻译...');
+          const words = document.querySelectorAll('.zhiyi-word');
+          words.forEach(el => {
+            const trans = el.querySelector('.zhiyi-translation');
+            if (trans) trans.remove();
+            el.replaceWith(...el.childNodes);
+          });
+          document.querySelectorAll('.zhiyi-translated').forEach(el => el.replaceWith(...el.childNodes));
+          if (detectEnglishPage() && WordwiseSiteRules.sitePolicy(location.href, config) === 'manual') showActivationPrompt();
+        }
+        sendResponse({ success: true });
+      })
+      .catch(error => { console.error('保存激活状态失败:', error); sendResponse({ success: false, error: error.message }); });
+    return true;
   } else if (request.action === 'getTranslatedCount') {
     sendResponse({ count: document.querySelectorAll('.zhiyi-translation').length });
+  } else if (request.action === 'getSitePolicy') {
+    sendResponse({ policy: WordwiseSiteRules.sitePolicy(location.href, config) });
   }
 });
