@@ -1,0 +1,102 @@
+{
+  "unit": "document-word pair (a word present in two documents counts twice)",
+  "absent_pairs": 827,
+  "global_unique_words": 791,
+  "effective_oov_pairs": 632,
+  "categories": {
+    "derived-form-candidate": 145,
+    "compound-with-known-parts": 89,
+    "compound-with-unknown-part": 14,
+    "capitalized-surface-review": 93,
+    "apostrophe-or-possessive": 124,
+    "low-frequency-below-cutoff": 320,
+    "apostrophe-normalization": 1,
+    "upstream-zero-review": 27,
+    "historic-spelling-candidate": 8,
+    "acronym-candidate": 6
+  },
+  "unique_categories": {
+    "derived-form-candidate": 140,
+    "compound-with-known-parts": 88,
+    "compound-with-unknown-part": 14,
+    "capitalized-surface-review": 92,
+    "apostrophe-or-possessive": 98,
+    "low-frequency-below-cutoff": 317,
+    "apostrophe-normalization": 1,
+    "upstream-zero-review": 27,
+    "historic-spelling-candidate": 8,
+    "acronym-candidate": 6
+  },
+  "per_document": {
+    "novel-alice-full": {
+      "derived-form-candidate": 14,
+      "compound-with-known-parts": 17,
+      "compound-with-unknown-part": 1,
+      "capitalized-surface-review": 11,
+      "apostrophe-or-possessive": 30,
+      "low-frequency-below-cutoff": 32,
+      "apostrophe-normalization": 1,
+      "upstream-zero-review": 2
+    },
+    "novel-gatsby": {
+      "apostrophe-or-possessive": 34,
+      "low-frequency-below-cutoff": 62,
+      "derived-form-candidate": 48,
+      "upstream-zero-review": 7,
+      "capitalized-surface-review": 12,
+      "compound-with-unknown-part": 3,
+      "compound-with-known-parts": 19
+    },
+    "novel-dalloway": {
+      "capitalized-surface-review": 25,
+      "apostrophe-or-possessive": 26,
+      "low-frequency-below-cutoff": 84,
+      "derived-form-candidate": 32,
+      "compound-with-known-parts": 19,
+      "upstream-zero-review": 5,
+      "compound-with-unknown-part": 2
+    },
+    "essay-modest-full": {
+      "compound-with-unknown-part": 1,
+      "low-frequency-below-cutoff": 64,
+      "historic-spelling-candidate": 8,
+      "capitalized-surface-review": 14,
+      "derived-form-candidate": 28,
+      "upstream-zero-review": 7,
+      "apostrophe-or-possessive": 8,
+      "compound-with-known-parts": 2
+    },
+    "software-pep8": {
+      "capitalized-surface-review": 26,
+      "apostrophe-or-possessive": 20,
+      "compound-with-known-parts": 20,
+      "low-frequency-below-cutoff": 42,
+      "compound-with-unknown-part": 5,
+      "derived-form-candidate": 16,
+      "acronym-candidate": 3,
+      "upstream-zero-review": 2
+    },
+    "journal-cdc-parvovirus-full": {
+      "low-frequency-below-cutoff": 23,
+      "acronym-candidate": 1,
+      "derived-form-candidate": 7,
+      "compound-with-unknown-part": 2,
+      "upstream-zero-review": 4,
+      "capitalized-surface-review": 3,
+      "apostrophe-or-possessive": 2,
+      "compound-with-known-parts": 6
+    },
+    "news-cdc-acip": {
+      "apostrophe-or-possessive": 1,
+      "acronym-candidate": 2,
+      "capitalized-surface-review": 2,
+      "low-frequency-below-cutoff": 9,
+      "compound-with-known-parts": 5
+    },
+    "explainer-nih-sleep": {
+      "compound-with-known-parts": 1,
+      "apostrophe-or-possessive": 3,
+      "low-frequency-below-cutoff": 4
+    }
+  }
+}
