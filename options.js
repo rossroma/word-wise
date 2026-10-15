@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // CEFR等级映射
   const cefrLevels = {
+    1: 'A1',
     2: 'A2',
     3: 'B1', 
     4: 'B2',
@@ -68,7 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
     6: 'C2'
   };
   const levelDescriptions = {
-    2: 'A2 · 翻译更多词汇，适合刚开始读英文内容。',
+    1: 'A1 · 翻译更多词汇，适合刚开始读英文内容。',
+    2: 'A2 · 翻译较多词汇，帮助逐步适应英文阅读。',
     3: 'B1 · 保留熟悉的表达，翻译较生疏的词汇。',
     4: 'B2 · 平衡阅读与学习，翻译较难的词汇。',
     5: 'C1 · 只翻译少见和复杂的词汇。',
@@ -78,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateLevel(level) {
     levelDisplay.textContent = cefrLevels[level] || level;
     levelHelp.textContent = levelDescriptions[level] || '';
-    difficultyLevelSlider.style.setProperty('--slider-progress', `${(level - 2) * 25}%`);
+    difficultyLevelSlider.style.setProperty('--slider-progress', `${(level - 1) * 20}%`);
     difficultyLevelSlider.setAttribute('aria-valuetext', cefrLevels[level] || String(level));
   }
   

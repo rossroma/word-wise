@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // CEFR等级映射
   const cefrLevels = {
+    1: 'A1',
     2: 'A2',
     3: 'B1', 
     4: 'B2',
