@@ -1,0 +1,86 @@
+[
+  {
+    "id": "novel-alice-full",
+    "genre": "novel",
+    "title": "Alice's Adventures in Wonderland (opening 24k characters)",
+    "source": "https://www.gutenberg.org/cache/epub/11/pg11.txt",
+    "format": "gutenberg",
+    "start": "Alice was beginning to get very tired of sitting by her sister",
+    "end": "THE END",
+    "licenseNote": "Lewis Carroll, 1865; public domain in the United States."
+  },
+  {
+    "id": "novel-gatsby",
+    "genre": "novel",
+    "title": "The Great Gatsby (modern-era fiction; opening 24k characters)",
+    "source": "https://www.gutenberg.org/cache/epub/64317/pg64317.txt",
+    "format": "gutenberg",
+    "start": "In my younger and more vulnerable years my father gave me some advice",
+    "end": "*** END OF THE PROJECT GUTENBERG EBOOK",
+    "licenseNote": "F. Scott Fitzgerald, 1925; public domain in the United States. Modern-era narrative, not a contemporary copyrighted work."
+  },
+  {
+    "id": "novel-dalloway",
+    "genre": "novel",
+    "title": "Mrs. Dalloway (literary modernism; opening 24k characters)",
+    "source": "https://www.gutenberg.org/cache/epub/71865/pg71865.txt",
+    "format": "gutenberg",
+    "start": "Mrs. Dalloway said she would buy the flowers herself.",
+    "end": "*** END OF THE PROJECT GUTENBERG EBOOK",
+    "licenseNote": "Virginia Woolf, 1925; Project Gutenberg labels text public domain in the United States; rights elsewhere may differ."
+  },
+  {
+    "id": "essay-modest-full",
+    "genre": "essay",
+    "title": "A Modest Proposal (complete essay)",
+    "source": "https://www.gutenberg.org/cache/epub/1080/pg1080.txt",
+    "format": "gutenberg",
+    "start": "It is a melancholy object to those, who walk through this great town",
+    "end": "*** END OF THE PROJECT GUTENBERG EBOOK",
+    "licenseNote": "Jonathan Swift, 1729; public domain in the United States."
+  },
+  {
+    "id": "article-pikuma-c-types",
+    "genre": "technical-article",
+    "title": "C's Flexible Integer Sizes Were Not a Design Mistake",
+    "source": "https://pikuma.com/blog/c-integer-sizes-not-a-mistake",
+    "format": "pikuma-article",
+    "distribution": "local-only",
+    "licenseNote": "Copyright Pikuma; text fetched for private benchmarking only. Do not redistribute the snapshot."
+  },
+  {
+    "id": "software-pep8",
+    "genre": "software",
+    "title": "PEP 8: Style Guide for Python Code (software engineering prose)",
+    "source": "https://peps.python.org/pep-0008/",
+    "format": "python-pep",
+    "licenseNote": "Python PEP 8 Copyright section places this document in the public domain. Documentation prose only, excluding code samples and navigation."
+  },
+  {
+    "id": "journal-cdc-parvovirus-full",
+    "genre": "journal",
+    "title": "CDC MMWR: Parvovirus B19 surveillance (report up to 24k characters)",
+    "source": "https://www.cdc.gov/mmwr/volumes/73/wr/mm7347a2.htm",
+    "format": "cdc-mmwr",
+    "licenseNote": "CDC MMWR government publication. Main report sections only; references and page chrome excluded."
+  },
+  {
+    "id": "news-cdc-acip",
+    "genre": "news",
+    "title": "CDC: ACIP joint statement",
+    "source": "https://www.cdc.gov/media/releases/2025/2025-cdcs-advisory-committee-on-immunization-concludes-meeting-with-joint-statement.html",
+    "format": "cdc-release",
+    "start": "ATLANTA—JUNE 26, 2025",
+    "end": "Whether diseases start at home or abroad",
+    "licenseNote": "CDC government news release. Main article only."
+  },
+  {
+    "id": "explainer-nih-sleep",
+    "genre": "explainer",
+    "title": "NICHD: What happens during sleep?",
+    "source": "https://www.nichd.nih.gov/health/topics/sleep/conditioninfo/what-happens",
+    "format": "nih-health",
+    "start": "In broad terms, the brain of someone who is sleeping",
+    "licenseNote": "NICHD/NIH government health explainer. Main article prose only."
+  }
+]
