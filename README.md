@@ -57,6 +57,10 @@
 
 本项目使用 [MIT 许可证](LICENSE)。
 
+## 本地开发
+
+运行 `npm ci` 安装开发依赖，`npm run lint` 检查手写 JavaScript（包括扩展代码、`lib/`、`tools/` 和 `tests/`），`npm test` 运行测试。自动生成的 `lib/en-zipf.js` 不参与 lint；如需更新它，请修改生成脚本后重新生成。
+
 ### 本地语料基准
 
 要对比不同阅读难度在多类样本中的匹配量，可运行 `npm run analyze:corpus`；完整候选词和未选中词可用 `npm run analyze:corpus -- --json` 查看。语料快照与来源见 `tests/corpus/long-fixtures.json` 和 `tests/corpus/sources.json`；运行 `python3 tools/fetch_corpus.py` 可刷新公版/政府语料。样本包括三种不同风格小说、一篇随笔、一篇 Python 软件工程文章、一篇医学报告，以及新闻与健康科普。版权受限的网页只保留来源 URL，不随项目分发正文。文学与软件样本为开头约 24,000 字符；新闻和科普较短，不能代表整个体裁。
