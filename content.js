@@ -183,7 +183,7 @@ window.zhiyiDebug = {
     );
     
     let node;
-    while (node = walker.nextNode()) {
+    while ((node = walker.nextNode())) {
       if (new RegExp(word, 'i').test(node.textContent)) {
         results.push({
           text: node.textContent.substring(0, 100),
@@ -750,7 +750,7 @@ function getTextNodes(element) {
   );
   
   let node;
-  while (node = walker.nextNode()) {
+  while ((node = walker.nextNode())) {
     textNodes.push(node);
   }
   
@@ -800,7 +800,7 @@ function injectTranslations(translations) {
   
   const nodesToProcess = [];
   let node;
-  while (node = walker.nextNode()) {
+  while ((node = walker.nextNode())) {
     nodesToProcess.push(node);
   }
   

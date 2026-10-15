@@ -50,7 +50,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return false;
     } 
     else if (request.action === 'translate') {
-      handleTranslation(request.words, sender.tab?.id)
+      handleTranslation(request.words)
         .then(result => sendResponse({ success: true, ...result }))
         .catch(error => {
           console.error('Translation error:', error);
@@ -122,7 +122,7 @@ function handleLanguageDetection(data, tabId) {
 }
 
 // 处理翻译请求（批量）
-async function handleTranslation(words, tabId) {
+async function handleTranslation(words) {
   // 获取最新配置
   const result = await chrome.storage.sync.get(['config']);
   const currentConfig = result.config || config;
